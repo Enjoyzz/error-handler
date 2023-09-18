@@ -9,7 +9,6 @@ namespace Enjoys\ErrorHandler\ErrorLogger;
 use Enjoys\ErrorHandler\Error;
 use Enjoys\ErrorHandler\ErrorHandler;
 use Enjoys\ErrorHandler\ErrorLoggerInterface;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use ReflectionClass;
@@ -55,7 +54,7 @@ final class ErrorLogger implements ErrorLoggerInterface
      */
     private array $loggerFormatMessageMap = [];
 
-    public function __construct(private LoggerInterface|Logger $logger)
+    public function __construct(private LoggerInterface $logger)
     {
     }
 
@@ -72,11 +71,19 @@ final class ErrorLogger implements ErrorLoggerInterface
         if ($logLevels === null) {
             $logLevels = (array)($this->logLevelMap[$error->errorLevel] ?? $this->defaultLogLevel);
         }
-
         $logger = $this->logger;
         if (array_key_exists($error->errorLevel, $this->loggerNameMap)) {
-            if ($logger instanceof Logger) {
+            if (method_exists($logger, 'withName')) {
                 $logger = $logger->withName($this->loggerNameMap[$error->errorLevel]);
+                if (!$logger instanceof LoggerInterface) {
+                    throw new \RuntimeException(
+                        sprintf(
+                            'The method `withName` must be return of type %s, %s given',
+                            LoggerInterface::class,
+                            $this->logger::class
+                        )
+                    );
+                }
             }
         }
 
@@ -108,7 +115,7 @@ final class ErrorLogger implements ErrorLoggerInterface
             }
         }
 
-        if ($errors !== []){
+        if ($errors !== []) {
             throw new RuntimeException(
                 sprintf(
                     '%s - not allowed, allowed only (%s)',
@@ -173,6 +180,4 @@ final class ErrorLogger implements ErrorLoggerInterface
     {
         return $this->logger;
     }
-
-
 }
