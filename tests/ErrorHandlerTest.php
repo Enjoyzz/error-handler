@@ -100,8 +100,8 @@ class ErrorHandlerTest extends TestCase
             $this->createMock(ExceptionHandlerInterface::class),
             $this->createMock(ErrorLoggerInterface::class)
         );
-        json_decode('{]');
-        dd(error_get_last());
+        $errorHandler->addFatalError(E_WARNING);
+        @fopen('/'.uniqid('invalid_path'), 'r');
         $errorHandler->shutdownFunction();
     }
 
