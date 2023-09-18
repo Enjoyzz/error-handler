@@ -142,11 +142,16 @@ final class ErrorHandler
         }
     }
 
+    public function getFatalErrorLevel(): int
+    {
+        return $this->fatalErrorLevel;
+    }
 
     private function isFatalError(int $severity): bool
     {
-        return !!($this->fatalErrorLevel & $severity);
+        return !!($this->getFatalErrorLevel() & $severity);
     }
+
 
     public function addFatalError(int $errorLevel): ErrorHandler
     {
@@ -164,6 +169,8 @@ final class ErrorHandler
     {
         ini_set('display_errors', $value ? '1' : '0');
     }
+
+
 
 
 }
