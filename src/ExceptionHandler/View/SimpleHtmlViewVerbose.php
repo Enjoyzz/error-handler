@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Enjoys\ErrorHandler\ExceptionHandler\View;
 
 use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler;
 use Enjoys\ErrorHandler\ExceptionHandlerInterface;
 use HttpSoft\Message\Response;
 use ReflectionClass;
-use Throwable;
 
 final class SimpleHtmlViewVerbose implements ViewInterface
 {
     public function getContent(Error $error, int $statusCode = ExceptionHandlerInterface::DEFAULT_STATUS_CODE): string
     {
-
         /** @var string $phrase */
         $phrase = $this->getPhrase($statusCode);
 

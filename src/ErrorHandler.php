@@ -41,8 +41,8 @@ final class ErrorHandler
     private int $fatalErrorLevel = self::E_FATAL_ERROR;
 
     public function __construct(
-        private readonly ExceptionHandlerInterface $exceptionHandler,
-        private readonly ErrorLoggerInterface $logger
+        private ExceptionHandlerInterface $exceptionHandler,
+        private ErrorLoggerInterface $logger
     ) {
         $this->exceptionHandler->setErrorLogger($logger);
     }

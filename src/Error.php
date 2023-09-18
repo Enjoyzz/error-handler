@@ -7,14 +7,14 @@ use Throwable;
 final class Error
 {
     private function __construct(
-        public readonly string $message,
-        public readonly string $file,
-        public readonly int $line,
-        public readonly string $type,
-        public readonly int $code,
-        public readonly int $errorLevel,
-        public readonly string $traceString = '',
-        public readonly array $trace = [],
+        public string $message,
+        public string $file,
+        public int $line,
+        public string $type,
+        public int $code,
+        public int $errorLevel,
+        public string $traceString = '',
+        public array $trace = [],
     ) {
     }
 

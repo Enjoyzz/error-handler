@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Enjoys\ErrorHandler\ExceptionHandler\View;
 
 use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler;
 use Enjoys\ErrorHandler\ExceptionHandlerInterface;
 use HttpSoft\Message\Response;
 use ReflectionClass;
-use Throwable;
 
 final class SimpleHtmlView implements ViewInterface
 {

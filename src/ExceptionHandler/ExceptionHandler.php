@@ -17,7 +17,6 @@ use Enjoys\ErrorHandler\ExceptionHandler\Output\Svg;
 use Enjoys\ErrorHandler\ExceptionHandler\Output\Xml;
 use Enjoys\ErrorHandler\ExceptionHandler\View\ViewInterface;
 use Enjoys\ErrorHandler\ExceptionHandlerInterface;
-use Enjoys\ErrorHandler\PhpError;
 use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Emitter\SapiEmitter;
 use HttpSoft\Message\ResponseFactory;

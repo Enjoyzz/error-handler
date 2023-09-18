@@ -9,7 +9,6 @@ namespace Enjoys\ErrorHandler\ErrorLogger;
 use Enjoys\ErrorHandler\Error;
 use Enjoys\ErrorHandler\ErrorHandler;
 use Enjoys\ErrorHandler\ErrorLoggerInterface;
-use Enjoys\ErrorHandler\PhpError;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -56,11 +55,14 @@ final class ErrorLogger implements ErrorLoggerInterface
      */
     private array $loggerFormatMessageMap = [];
 
-    public function __construct(private readonly LoggerInterface $logger)
+    public function __construct(private LoggerInterface|Logger $logger)
     {
     }
 
 
+    /**
+     * @inheritdoc
+     */
     public function log(Error $error, array|false $logLevels = null): void
     {
         if ($logLevels === false) {
