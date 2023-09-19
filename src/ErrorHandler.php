@@ -11,6 +11,7 @@ final class ErrorHandler
 {
 
     public const ERROR_NAMES = [
+        0 => 'Exception',
         E_ERROR => 'PHP Fatal Error',
         E_WARNING => 'PHP Warning',
         E_PARSE => 'PHP Parse Error',

@@ -40,11 +40,27 @@ class ExceptionHandlerTest extends TestCase
         $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
 
         $exh->setHttpStatusCodeMap([
-            405 => [\DivisionByZeroError::class, \ArithmeticError::class]
+            405 => ['\ArithmeticError']
         ]);
 
         $exh->handle(new \ArithmeticError());
         $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
+    }
+
+    public function testSetLoggerTypeMapInConstruct()
+    {
+        $exh = new ExceptionHandler(
+            loggerTypeMap: [
+                500 =>  [LogLevel::CRITICAL]
+            ],
+            logger: new ErrorLogger($psrLogger = new TestLogger()),
+            emitter: new Emitter()
+        );
+
+        $exh->handle(new \Exception());
+        $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
+        $this->assertCount(1, $psrLogger->getLogs()[LogLevel::CRITICAL] ?? []);
+
     }
 
     public function testLoggerTypeMap()
@@ -53,6 +69,10 @@ class ExceptionHandlerTest extends TestCase
             emitter: new Emitter()
         );
         $exh->setErrorLogger(new ErrorLogger($psrLogger = new TestLogger()));
+
+        $exh->handle(new \DivisionByZeroError());
+        $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
+
         $exh->setLoggerTypeMap([
             405 => [LogLevel::ERROR],
             \ArithmeticError::class => [LogLevel::CRITICAL]
@@ -73,7 +93,7 @@ class ExceptionHandlerTest extends TestCase
         $exh->handle(new \ArithmeticError());
         $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
 
-        $this->assertCount(1, $psrLogger->getLogs()[LogLevel::ERROR] ?? []);
+        $this->assertCount(2, $psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertCount(1, $psrLogger->getLogs()[LogLevel::CRITICAL] ?? []);
     }
 

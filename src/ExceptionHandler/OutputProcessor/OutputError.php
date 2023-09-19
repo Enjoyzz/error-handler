@@ -12,6 +12,8 @@ use HttpSoft\Message\Response;
 use HttpSoft\Message\ResponseFactory;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
+use ReflectionException;
 use RuntimeException;
 
 /**
@@ -29,11 +31,11 @@ abstract class OutputError
 
     /**
      * @psalm-suppress MixedReturnStatement, MixedInferredReturnType
+     * @throws ReflectionException
      */
-    protected function getReasonPhrase(int $statusCode): string
+    private function getReasonPhrase(int $statusCode): string
     {
-        $reflection = new \ReflectionClass(Response::class);
-        $phrases = $reflection->getProperty('phrases');
+        $phrases = (new ReflectionClass(Response::class))->getProperty('phrases');
         $phrases->setAccessible(true);
         return $phrases->getValue()[$statusCode] ?? 'Unknown error';
     }
@@ -55,7 +57,7 @@ abstract class OutputError
         return $this;
     }
 
-    public function getResponseFactory(): ResponseFactoryInterface
+    protected function getResponseFactory(): ResponseFactoryInterface
     {
         return $this->responseFactory ?? new ResponseFactory();
     }
@@ -66,7 +68,7 @@ abstract class OutputError
         return $this;
     }
 
-    public function getMimeType(): string
+    protected function getMimeType(): string
     {
         return $this->mimeType;
     }
@@ -88,11 +90,14 @@ abstract class OutputError
         return $this;
     }
 
-    public function getView(): ?ErrorView
+    protected function getView(): ?ErrorView
     {
         return $this->view;
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function getHttpReasonPhrase(): string
     {
         return $this->getReasonPhrase($this->httpStatusCode);

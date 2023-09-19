@@ -74,7 +74,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     public function __construct(
         array $httpStatusCodeMap = [],
         array $outputErrorViewMap = [],
-        array $loggerTypeMap = [500 => [LogLevel::ERROR]],
+        ?array $loggerTypeMap = null,
         ?ErrorLoggerInterface $logger = null,
         ?ServerRequestInterface $request = null,
         ?EmitterInterface $emitter = null,
@@ -86,7 +86,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
         $this->responseFactory = $responseFactory ?? new ResponseFactory();
         $this->httpStatusCodeMap = $httpStatusCodeMap;
         $this->outputErrorViewMap = $outputErrorViewMap;
-        $this->loggerTypeMap = $loggerTypeMap;
+        $this->loggerTypeMap = $loggerTypeMap ?? [500 => [LogLevel::ERROR]];
     }
 
     /**
@@ -121,7 +121,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     private function getStatusCode(Throwable $error): int
     {
         foreach ($this->httpStatusCodeMap as $statusCode => $stack) {
-            if (in_array($error::class, $stack) || in_array('\\' . $error::class, $stack)) {
+            if (in_array($error::class, $stack, true) || in_array('\\' . $error::class, $stack, true)) {
                 return $statusCode;
             }
         }
@@ -154,11 +154,6 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     private function getView(string $output): ?ErrorView
     {
         $view = $this->outputErrorViewMap[$output] ?? null;
-
-        if ($view instanceof ErrorView){
-            return $view;
-        }
-
         return $view ? new $view() : null;
     }
 

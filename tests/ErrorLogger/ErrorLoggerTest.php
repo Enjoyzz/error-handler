@@ -20,7 +20,7 @@ class ErrorLoggerTest extends TestCase
     protected function setUp(): void
     {
         $this->psrLogger = new TestLogger();
-         $this->errorLogger = new ErrorLogger($this->psrLogger);
+        $this->errorLogger = new ErrorLogger($this->psrLogger);
     }
 
     protected function tearDown(): void
@@ -32,8 +32,14 @@ class ErrorLoggerTest extends TestCase
 
     public function testLogWithDefaultLogLevel()
     {
-        $this->errorLogger->log(Error::createFromThrowable(new \Exception('error')));
-        $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::NOTICE] ?? []);
+        $this->errorLogger->log(
+            Error::createFromThrowable(new \ErrorException('error', filename: $file = __FILE__, line: $line = __LINE__))
+        );
+        $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
+        $this->assertSame(
+            sprintf('PHP Fatal Error: error in %s on line %s', $file, $line),
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+        );
     }
 
     public function testLogWithManyLogLevel()
@@ -45,6 +51,11 @@ class ErrorLoggerTest extends TestCase
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ALERT] ?? []);
         $this->assertCount(0, $this->psrLogger->getLogs()[LogLevel::NOTICE] ?? []);
+
+        $this->assertStringContainsString(
+            'Exception: error in ',
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+        );
     }
 
     public function testGetPsrLogger()
@@ -112,6 +123,16 @@ class ErrorLoggerTest extends TestCase
         $this->errorLogger->log(Error::createFromThrowable(new \Exception('The error')));
         $this->assertCount(0, $this->psrLogger->getLogs()[LogLevel::NOTICE] ?? []);
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::EMERGENCY] ?? []);
+    }
+
+    public function testSetDefaultLogLevelInvalid()
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(
+            'InvalidLogLevel - not allowed, allowed only (EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG)'
+        );
+        $this->errorLogger->setDefaultLogLevel('InvalidLogLevel');
+        $this->errorLogger->log(Error::createFromThrowable(new \Exception('The error')));
     }
 
 

@@ -19,10 +19,7 @@ final class Html extends OutputError
         return $response;
     }
 
-    /**
-     * @return string
-     */
-    public function getDefaultBody(): string
+    private function getDefaultBody(): string
     {
         return <<<HTML
 <!DOCTYPE html>

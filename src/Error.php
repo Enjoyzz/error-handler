@@ -40,7 +40,7 @@ final class Error
             line: $error->getLine(),
             type: $error::class,
             code: $error->getCode(),
-            errorLevel: 0,
+            errorLevel: ($error instanceof \ErrorException) ? $error->getSeverity() : 0,
             traceString: $error->getTraceAsString(),
             trace: $error->getTrace(),
         );
