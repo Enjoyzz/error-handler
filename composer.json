@@ -21,7 +21,8 @@
         "phpunit/phpunit": "^9.6|^10.1",
         "vimeo/psalm": "^5.0",
         "symfony/var-dumper": "^6.0",
-        "monolog/monolog": "^2.0 | ^3.0"
+        "monolog/monolog": "^2.0 | ^3.0",
+        "infection/infection": "^0.26 | ^0.27"
 
     },
     "autoload": {
@@ -36,7 +37,13 @@
     },
     "scripts": {
         "phpunit": "@php ./vendor/bin/phpunit tests",
-        "psalm": "@php ./vendor/bin/psalm"
+        "psalm": "@php ./vendor/bin/psalm",
+        "infection": "@php ./vendor/bin/infection"
 
+    },
+    "config": {
+        "allow-plugins": {
+            "infection/extension-installer": true
+        }
     }
 }
