@@ -2,29 +2,40 @@
 
 declare(strict_types=1);
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\View;
+namespace Enjoys\ErrorHandler\ExceptionHandler\View\Html;
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandlerInterface;
+use Enjoys\ErrorHandler\ExceptionHandler\ErrorOutputProcessor;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
 use HttpSoft\Message\Response;
 use ReflectionClass;
 
-final class SimpleHtmlViewVeryVerbose implements ViewInterface
+final class SimpleHtmlErrorViewVerbose implements ErrorView
 {
-    public function getContent(Error $error, int $statusCode = ExceptionHandlerInterface::DEFAULT_STATUS_CODE): string
+    public function getContent(OutputError $processor): string
     {
         /** @var string $phrase */
-        $phrase = $this->getPhrase($statusCode);
+        $phrase = $this->getPhrase($processor->getHttpStatusCode());
 
-        $message = htmlspecialchars(
-            sprintf('%s: %s in %s:%s', $error->type, $error->message, $error->file, $error->line)
+        $message = implode(
+            ': ',
+            array_filter(
+                [
+                    $processor->getError()->type,
+                    empty($error->code) ? null : $error->code,
+                    empty($error->message) ? null : htmlspecialchars($error->message),
+                ],
+                function ($item) {
+                    return !is_null($item);
+                }
+            )
         );
 
         return <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Error $statusCode. $phrase</title>
+    <title>Error {$processor->getHttpStatusCode()}. $phrase</title>
     <style>
         body {
 
@@ -44,11 +55,11 @@ final class SimpleHtmlViewVeryVerbose implements ViewInterface
 <p>If you are the system administrator of this resource then you should check
     the error log for details.</p>
 <p>
-    <code><b>$statusCode</b><br>$phrase
+    <code><b>{$processor->getHttpStatusCode()}</b><br>$phrase
     </code>
-    <div style="font-family: monospace; display: block; margin-top: 2em; color: grey">
+    <code style="display: block; margin-top: 2em; color: grey">
     $message
-    </div>
+    </code>
 </p>
 <p>
 HTML;

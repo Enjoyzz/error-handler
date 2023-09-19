@@ -6,11 +6,13 @@ namespace Enjoys\Tests\ErrorHandler\ExceptionHandler;
 
 use Enjoys\ErrorHandler\ErrorLogger\ErrorLogger;
 use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Html;
+use Enjoys\ErrorHandler\ExceptionHandler\View\Html\SimpleHtmlErrorView;
 use Enjoys\Tests\ErrorHandler\CatchResponse;
+use Enjoys\Tests\ErrorHandler\Emitter;
 use Enjoys\Tests\ErrorHandler\TestLogger;
-use HttpSoft\Emitter\EmitterInterface;
+use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LogLevel;
 
 class ExceptionHandlerTest extends TestCase
@@ -54,15 +56,33 @@ class ExceptionHandlerTest extends TestCase
 //    {
 //    }
 
-    public function testHandle()
+    public function testHttpStatusCodeMap()
     {
         $exh = new ExceptionHandler(
-            emitter: new class implements EmitterInterface {
-                public function emit(ResponseInterface $response, bool $withoutBody = false): void
-                {
-                    CatchResponse::throw($response);
-                }
-            }
+            httpStatusCodeMap: [
+                405 => [\DivisionByZeroError::class]
+            ],
+            emitter: new Emitter()
+        );
+
+        $exh->handle(new \DivisionByZeroError());
+        $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
+
+        $exh->handle(new \ArithmeticError());
+        $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
+
+        $exh->setHttpStatusCodeMap([
+            405 => [\DivisionByZeroError::class, \ArithmeticError::class]
+        ]);
+
+        $exh->handle(new \ArithmeticError());
+        $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
+    }
+
+    public function testLoggerTypeMap()
+    {
+        $exh = new ExceptionHandler(
+            emitter: new Emitter()
         );
         $exh->setErrorLogger(new ErrorLogger($psrLogger = new TestLogger()));
         $exh->setLoggerTypeMap([
@@ -96,7 +116,22 @@ class ExceptionHandlerTest extends TestCase
         $this->assertCount(1, $psrLogger->getLogs()[LogLevel::CRITICAL] ?? []);
     }
 
-//    public function testSetOutputErrorViewMap()
-//    {
-//    }
+    public function testOutputErrorViewMap()
+    {
+        $exh = new ExceptionHandler(
+            outputErrorViewMap: [
+                Html::class => new SimpleHtmlErrorView()
+            ],
+            request: (new ServerRequestFactory())->createServerRequest('get', '/')->withAddedHeader(
+                'Accept',
+                'application/json'
+            ),
+            emitter: new Emitter()
+        );
+
+        $exh->handle(new \Exception());
+        $response = CatchResponse::getResponse();
+
+        $this->assertSame('{"error":{"type":"Exception","code":0,"message":""}}', $response->getBody()->__toString());
+    }
 }

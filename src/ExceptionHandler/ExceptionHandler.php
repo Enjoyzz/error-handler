@@ -8,14 +8,14 @@ namespace Enjoys\ErrorHandler\ExceptionHandler;
 
 use Enjoys\ErrorHandler\Error;
 use Enjoys\ErrorHandler\ErrorLoggerInterface;
-use Enjoys\ErrorHandler\ExceptionHandler\Output\ErrorOutputInterface;
-use Enjoys\ErrorHandler\ExceptionHandler\Output\Html;
-use Enjoys\ErrorHandler\ExceptionHandler\Output\Image;
-use Enjoys\ErrorHandler\ExceptionHandler\Output\Json;
-use Enjoys\ErrorHandler\ExceptionHandler\Output\Plain;
-use Enjoys\ErrorHandler\ExceptionHandler\Output\Svg;
-use Enjoys\ErrorHandler\ExceptionHandler\Output\Xml;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ViewInterface;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Html;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Image;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Json;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Plain;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Svg;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Xml;
+use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
 use Enjoys\ErrorHandler\ExceptionHandlerInterface;
 use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Emitter\SapiEmitter;
@@ -29,7 +29,7 @@ use Throwable;
 final class ExceptionHandler implements ExceptionHandlerInterface
 {
     /**
-     * @var array<class-string<ErrorOutputInterface>, string[]>
+     * @var array<class-string<ErrorOutputProcessor>, string[]>
      */
     private array $outputErrorMimeMap = [
         Json::class => ['application/json', 'text/json'],
@@ -41,7 +41,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     ];
 
     /**
-     * @var array<class-string<ErrorOutputInterface>, ViewInterface>
+     * @var array<class-string<ErrorOutputProcessor>, ErrorView>
      */
     private array $outputErrorViewMap;
 
@@ -65,7 +65,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
 
     /**
      * @param array<int, list<string>> $httpStatusCodeMap
-     * @param array<class-string<ErrorOutputInterface>, ViewInterface> $outputErrorViewMap
+     * @param array<class-string<ErrorOutputProcessor>, ErrorView> $outputErrorViewMap
      * @param array<array-key, list<string>> $loggerTypeMap
      * @param ServerRequestInterface|null $request
      * @param EmitterInterface|null $emitter
@@ -129,9 +129,9 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     }
 
 
-    private function getErrorOutput(Throwable $error, int $httpStatusCode): ErrorOutputInterface
+    private function getErrorOutput(Throwable $error, int $httpStatusCode): OutputError
     {
-        /** @var class-string<ErrorOutputInterface> $output */
+        /** @var class-string<OutputError> $output */
         foreach ($this->outputErrorMimeMap as $output => $mimes) {
             foreach ($mimes as $mime) {
                 if (stripos($this->request->getHeaderLine('Accept'), $mime) !== false) {
@@ -177,11 +177,11 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     }
 
     /**
-     * @param class-string<ErrorOutputInterface> $type
-     * @param ViewInterface $template
+     * @param class-string<OutputError> $type
+     * @param ErrorView $template
      * @return ExceptionHandlerInterface
      */
-    public function setOutputErrorView(string $type, ViewInterface $template): ExceptionHandlerInterface
+    public function setOutputErrorView(string $type, ErrorView $template): ExceptionHandlerInterface
     {
         $this->outputErrorViewMap[$type] = $template;
         return $this;

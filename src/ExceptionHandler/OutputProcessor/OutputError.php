@@ -3,22 +3,23 @@
 declare(strict_types=1);
 
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\Output;
+namespace Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor;
 
 
 use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ViewInterface;
+use Enjoys\ErrorHandler\ExceptionHandler\ErrorOutputProcessor;
+use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
 use HttpSoft\Message\ResponseFactory;
 use Psr\Http\Message\ResponseFactoryInterface;
 use RuntimeException;
 
-abstract class OutputError implements ErrorOutputInterface
+abstract class OutputError
 {
     private ?ResponseFactoryInterface $responseFactory = null;
     private string $mimeType = 'text/html';
     private int $httpStatusCode = 500;
     private ?Error $error = null;
-    private ?ViewInterface $view = null;
+    private ?ErrorView $view = null;
 
 
     public function setError(Error $error): static
@@ -65,13 +66,13 @@ abstract class OutputError implements ErrorOutputInterface
         return $this->httpStatusCode;
     }
 
-    public function setView(?ViewInterface $view = null): static
+    public function setView(?ErrorView $view = null): static
     {
         $this->view = $view;
         return $this;
     }
 
-    public function getView(): ?ViewInterface
+    public function getView(): ?ErrorView
     {
         return $this->view;
     }

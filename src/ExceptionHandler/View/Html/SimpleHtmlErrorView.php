@@ -2,39 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\View;
+namespace Enjoys\ErrorHandler\ExceptionHandler\View\Html;
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandlerInterface;
+use Enjoys\ErrorHandler\ExceptionHandler\ErrorOutputProcessor;
+use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
 use HttpSoft\Message\Response;
 use ReflectionClass;
 
-final class SimpleHtmlViewVerbose implements ViewInterface
+final class SimpleHtmlErrorView implements ErrorView
 {
-    public function getContent(Error $error, int $statusCode = ExceptionHandlerInterface::DEFAULT_STATUS_CODE): string
+    public function getContent(OutputError $processor): string
     {
         /** @var string $phrase */
-        $phrase = $this->getPhrase($statusCode);
-
-        $message = implode(
-            ': ',
-            array_filter(
-                [
-                    $error->type,
-                    empty($error->code) ? null : $error->code,
-                    empty($error->message) ? null : htmlspecialchars($error->message),
-                ],
-                function ($item) {
-                    return !is_null($item);
-                }
-            )
-        );
+        $phrase = $this->getPhrase($processor->getHttpStatusCode());
 
         return <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Error $statusCode. $phrase</title>
+    <title>Error {$processor->getHttpStatusCode()}. $phrase</title>
     <style>
         body {
 
@@ -54,10 +41,7 @@ final class SimpleHtmlViewVerbose implements ViewInterface
 <p>If you are the system administrator of this resource then you should check
     the error log for details.</p>
 <p>
-    <code><b>$statusCode</b><br>$phrase
-    </code>
-    <code style="display: block; margin-top: 2em; color: grey">
-    $message
+    <code><b>{$processor->getHttpStatusCode()}</b><br>$phrase
     </code>
 </p>
 <p>
