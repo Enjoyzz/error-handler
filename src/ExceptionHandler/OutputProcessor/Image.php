@@ -22,28 +22,15 @@ final class Image extends OutputError
     public function getResponse(): ResponseInterface
     {
         $response = $this->getResponseFactory()->createResponse($this->getHttpStatusCode());
-        ob_start();
-        $image = $this->createImage();
-        switch ($this->getMimeType()) {
-            case 'image/gif':
-                imagegif($image);
-                break;
-            case 'image/jpeg':
-                imagejpeg($image);
-                break;
-            case 'image/png':
-                imagepng($image);
-                break;
-            case 'image/webp':
-                imagewebp($image);
-                break;
-        }
-
-        $response->getBody()->write((string)ob_get_clean());
-
+        $response->getBody()->write(
+            $this->getView()?->getContent($this) ?? $this->getDefaultBody()
+        );
         return $response;
     }
 
+    /**
+     * @infection-ignore-all
+     */
     private function createImage(): \GdImage
     {
         $type = $this->getError()->type;
@@ -60,6 +47,27 @@ final class Image extends OutputError
         }
 
         return $image;
+    }
+
+    private function getDefaultBody(): string
+    {
+        ob_start();
+        $image = $this->createImage();
+        switch ($this->getMimeType()) {
+            case 'image/gif':
+                imagegif($image);
+                break;
+            case 'image/jpeg':
+                imagejpeg($image);
+                break;
+            case 'image/png':
+                imagepng($image);
+                break;
+            case 'image/webp':
+                imagewebp($image);
+                break;
+        }
+       return ob_get_clean();
     }
 
 }

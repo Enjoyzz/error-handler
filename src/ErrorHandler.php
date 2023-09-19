@@ -131,14 +131,14 @@ final class ErrorHandler
     public function shutdownFunction(): void
     {
         $e = error_get_last();
-
+//dd($e);
         if ($e !== null && $this->isFatalError($e['type'])) {
             throw new ErrorException(
-                sprintf('%s: %s', self::ERROR_NAMES[$e['type']] ?? '', $e['message']),
-                0,
-                $e['type'],
-                $e['file'],
-                $e['line']
+                message: sprintf('%s: %s', self::ERROR_NAMES[$e['type']] ?? '', $e['message']),
+                code: 0,
+                severity: $e['type'],
+                filename: $e['file'],
+                line: $e['line']
             );
         }
     }
