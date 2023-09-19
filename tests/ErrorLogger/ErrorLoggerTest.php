@@ -25,7 +25,9 @@ class ErrorLoggerTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->psrLogger->reset();
+        TestLogger::reset();
+        TestLoggerInvalidWithName::reset();
+        TestLoggerWithName::reset();
     }
 
     public function testLogWithDefaultLogLevel()

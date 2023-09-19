@@ -29,7 +29,7 @@ use Throwable;
 final class ExceptionHandler implements ExceptionHandlerInterface
 {
     /**
-     * @var array<class-string<ErrorOutputProcessor>, string[]>
+     * @var array<class-string<OutputError>, string[]>
      */
     private array $outputErrorMimeMap = [
         Json::class => ['application/json', 'text/json'],
@@ -41,7 +41,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     ];
 
     /**
-     * @var array<class-string<ErrorOutputProcessor>, ErrorView>
+     * @var array<class-string<OutputError>, ErrorView|class-string<ErrorView>>
      */
     private array $outputErrorViewMap;
 
@@ -65,7 +65,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
 
     /**
      * @param array<int, list<string>> $httpStatusCodeMap
-     * @param array<class-string<OutputError>, class-string<ErrorView>> $outputErrorViewMap
+     * @param array<class-string<OutputError>, class-string<ErrorView>|ErrorView> $outputErrorViewMap
      * @param array<array-key, list<string>> $loggerTypeMap
      * @param ServerRequestInterface|null $request
      * @param EmitterInterface|null $emitter
@@ -148,12 +148,17 @@ final class ExceptionHandler implements ExceptionHandlerInterface
         return (new Html())
             ->setError(Error::createFromThrowable($error))
             ->setHttpStatusCode($httpStatusCode)
-            ->setView($this->outputErrorViewMap[Html::class] ?? null);
+            ->setView($this->getView(Html::class));
     }
 
     private function getView(string $output): ?ErrorView
     {
         $view = $this->outputErrorViewMap[$output] ?? null;
+
+        if ($view instanceof ErrorView){
+            return $view;
+        }
+
         return $view ? new $view() : null;
     }
 
@@ -184,10 +189,10 @@ final class ExceptionHandler implements ExceptionHandlerInterface
 
     /**
      * @param class-string<OutputError> $type
-     * @param class-string<ErrorView> $template
+     * @param class-string<ErrorView>|ErrorView $template
      * @return ExceptionHandlerInterface
      */
-    public function setOutputErrorView(string $type, string $template): ExceptionHandlerInterface
+    public function setOutputErrorView(string $type, string|ErrorView $template): ExceptionHandlerInterface
     {
         $this->outputErrorViewMap[$type] = $template;
         return $this;

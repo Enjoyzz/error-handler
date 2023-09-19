@@ -7,10 +7,11 @@ namespace Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor;
 
 
 use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler\ErrorOutputProcessor;
 use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
+use HttpSoft\Message\Response;
 use HttpSoft\Message\ResponseFactory;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
 abstract class OutputError
@@ -21,6 +22,15 @@ abstract class OutputError
     private ?Error $error = null;
     private ?ErrorView $view = null;
 
+    abstract public function getResponse(): ResponseInterface;
+
+    protected function getReasonPhrase(int $statusCode): string
+    {
+        $reflection = new \ReflectionClass(Response::class);
+        $phrases = $reflection->getProperty('phrases');
+        $phrases->setAccessible(true);
+        return $phrases->getValue()[$statusCode] ?? 'Unknown error';
+    }
 
     public function setError(Error $error): static
     {
@@ -75,6 +85,11 @@ abstract class OutputError
     public function getView(): ?ErrorView
     {
         return $this->view;
+    }
+
+    public function getHttpReasonPhrase(): string
+    {
+        return $this->getReasonPhrase($this->httpStatusCode);
     }
 
 }

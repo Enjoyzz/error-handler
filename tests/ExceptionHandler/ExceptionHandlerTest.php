@@ -6,55 +6,23 @@ namespace Enjoys\Tests\ErrorHandler\ExceptionHandler;
 
 use Enjoys\ErrorHandler\ErrorLogger\ErrorLogger;
 use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Html;
-use Enjoys\ErrorHandler\ExceptionHandler\View\Html\SimpleHtmlErrorView;
 use Enjoys\Tests\ErrorHandler\CatchResponse;
 use Enjoys\Tests\ErrorHandler\Emitter;
 use Enjoys\Tests\ErrorHandler\TestLogger;
-use HttpSoft\Message\ServerRequestFactory;
+use Enjoys\Tests\ErrorHandler\TestLoggerInvalidWithName;
+use Enjoys\Tests\ErrorHandler\TestLoggerWithName;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
 class ExceptionHandlerTest extends TestCase
 {
 
-//    public function testSetHttpStatusCodeMap(): void
-//    {
-//
-//        $exh = new ExceptionHandler(httpStatusCodeMap: $startedHttpStatusMap = [
-//            500 => [\RuntimeException::class]
-//        ]);
-//        $this->assertSame($startedHttpStatusMap, $exh->getHttpStatusCodeMap());
-//
-//        $httpCodeStatusMap = [
-//            401 => [\Exception::class],
-//            402 => [\ErrorException::class]
-//        ];
-//        $exh->setHttpStatusCodeMap($httpCodeStatusMap);
-//        $this->assertSame($httpCodeStatusMap, $exh->getHttpStatusCodeMap());
-//    }
-//
-//    public function testSetLoggerTypeMap()
-//    {
-//        $exh = new ExceptionHandler(loggerTypeMap: $startedLoggerTypeMap = [
-//            500 => [LogLevel::ERROR]
-//        ]);
-//        $this->assertSame($startedLoggerTypeMap, $exh->getLoggerTypeMap());
-//
-//        $loggerTypeMap = [
-//            500 => [LogLevel::CRITICAL]
-//        ];
-//        $exh->setLoggerTypeMap($loggerTypeMap);
-//        $this->assertSame($loggerTypeMap, $exh->getLoggerTypeMap());
-//    }
-
-//    public function testSetOutputErrorView()
-//    {
-//    }
-//
-//    public function testSetErrorLogger()
-//    {
-//    }
+    protected function tearDown(): void
+    {
+        TestLogger::reset();
+        TestLoggerInvalidWithName::reset();
+        TestLoggerWithName::reset();
+    }
 
     public function testHttpStatusCodeMap()
     {
@@ -81,7 +49,6 @@ class ExceptionHandlerTest extends TestCase
 
     public function testLoggerTypeMap()
     {
-
         $exh = new ExceptionHandler(
             emitter: new Emitter()
         );
@@ -98,7 +65,7 @@ class ExceptionHandlerTest extends TestCase
             405 => [\DivisionByZeroError::class]
         ]);
         $exh->handle(new \DivisionByZeroError());
-        $this->assertSame(405,  CatchResponse::getResponse()->getStatusCode());
+        $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
 
         $exh->setHttpStatusCodeMap([
             405 => [\DivisionByZeroError::class, \ArithmeticError::class]

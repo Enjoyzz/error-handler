@@ -13,9 +13,6 @@ final class SimpleHtmlErrorViewVeryVerbose implements ErrorView
 {
     public function getContent(OutputError $processor): string
     {
-        /** @var string $phrase */
-        $phrase = $this->getPhrase($processor->getHttpStatusCode());
-
         $message = htmlspecialchars(
             sprintf('%s: %s in %s:%s', $processor->getError()->type,  $processor->getError()->message,  $processor->getError()->file,  $processor->getError()->line)
         );
@@ -24,7 +21,7 @@ final class SimpleHtmlErrorViewVeryVerbose implements ErrorView
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Error {$processor->getHttpStatusCode()}. $phrase</title>
+    <title>Error {$processor->getHttpStatusCode()}. {$processor->getHttpReasonPhrase()}</title>
     <style>
         body {
 
@@ -44,7 +41,7 @@ final class SimpleHtmlErrorViewVeryVerbose implements ErrorView
 <p>If you are the system administrator of this resource then you should check
     the error log for details.</p>
 <p>
-    <code><b>{$processor->getHttpStatusCode()}</b><br>$phrase
+    <code><b>{$processor->getHttpStatusCode()}</b><br>{$processor->getHttpReasonPhrase()}
     </code>
     <div style="font-family: monospace; display: block; margin-top: 2em; color: grey">
     $message
@@ -54,15 +51,4 @@ final class SimpleHtmlErrorViewVeryVerbose implements ErrorView
 HTML;
     }
 
-    /**
-     * @param int $statusCode
-     * @return mixed|string
-     */
-    private function getPhrase(int $statusCode): mixed
-    {
-        $reflection = new ReflectionClass(Response::class);
-        $phrases = $reflection->getProperty('phrases');
-        $phrases->setAccessible(true);
-        return $phrases->getValue()[$statusCode] ?? 'Unknown error';
-    }
 }

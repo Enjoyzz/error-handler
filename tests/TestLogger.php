@@ -56,7 +56,7 @@ class TestLogger implements LoggerInterface
         self::$logs[$level][] = $message;
     }
 
-    public function reset(): void
+    public static function reset(): void
     {
         self::$logs = [];
     }
