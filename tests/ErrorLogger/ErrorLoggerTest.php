@@ -20,8 +20,12 @@ class ErrorLoggerTest extends TestCase
     protected function setUp(): void
     {
         $this->psrLogger = new TestLogger();
+         $this->errorLogger = new ErrorLogger($this->psrLogger);
+    }
+
+    protected function tearDown(): void
+    {
         $this->psrLogger->reset();
-        $this->errorLogger = new ErrorLogger($this->psrLogger);
     }
 
     public function testLogWithDefaultLogLevel()
@@ -33,7 +37,8 @@ class ErrorLoggerTest extends TestCase
     public function testLogWithManyLogLevel()
     {
         $this->errorLogger->log(Error::createFromThrowable(new \Exception('error')), [
-            LogLevel::ERROR, LogLevel::ALERT
+            LogLevel::ERROR,
+            LogLevel::ALERT
         ]);
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ALERT] ?? []);
@@ -47,23 +52,54 @@ class ErrorLoggerTest extends TestCase
 
     public function testLogDefaultLogFormat()
     {
-        $this->errorLogger->log(Error::createFromPhpError(E_USER_ERROR, 'The error message', 'test.php', 42));
+        $this->errorLogger->log(
+            Error::createFromPhpError(
+                E_USER_ERROR,
+                sprintf('The Error Message: %s', __METHOD__),
+                __FILE__,
+                $line = __LINE__
+            )
+        );
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
-        $this->assertSame('PHP User Error: The error message in test.php on line 42', $this->psrLogger->getLogs()[LogLevel::ERROR][0]);
+        $this->assertSame(
+            sprintf(
+                'PHP User Error: The Error Message: Enjoys\Tests\ErrorHandler\ErrorLogger\ErrorLoggerTest::testLogDefaultLogFormat in %s on line %s',
+                __FILE__,
+                $line
+            ),
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+        );
     }
 
     public function testLogWithCustomLogFormat()
     {
         $this->errorLogger->setLoggerFormatMessage(E_USER_ERROR, '%2$s in %3$s:%4$s');
-        $this->errorLogger->log(Error::createFromPhpError(E_USER_ERROR, 'The error message', 'test.php', 42));
+
+        $this->errorLogger->log(
+            Error::createFromPhpError(
+                E_USER_ERROR,
+                sprintf('The Error Message: %s', __METHOD__),
+                __FILE__,
+                $line = __LINE__
+            )
+        );
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
-        $this->assertSame('The error message in test.php:42', $this->psrLogger->getLogs()[LogLevel::ERROR][0]);
+        $this->assertSame(
+            sprintf(
+                'The Error Message: Enjoys\Tests\ErrorHandler\ErrorLogger\ErrorLoggerTest::testLogWithCustomLogFormat in %s:%s',
+                __FILE__,
+                $line
+            ),
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+        );
     }
 
     public function testLogWithCustomLoggerLevel()
     {
         $this->errorLogger->setLogLevel(E_USER_ERROR, LogLevel::CRITICAL);
-        $this->errorLogger->log(Error::createFromPhpError(E_USER_ERROR, 'The error message', 'test.php', 42));
+        $this->errorLogger->log(
+            Error::createFromPhpError(E_USER_ERROR, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__)
+        );
         $this->assertCount(0, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::CRITICAL] ?? []);
     }
@@ -86,7 +122,9 @@ class ErrorLoggerTest extends TestCase
     public function testInvalidSetLogLevel()
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('InvalidLogLevel - not allowed, allowed only (EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG)');
+        $this->expectExceptionMessage(
+            'InvalidLogLevel - not allowed, allowed only (EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG)'
+        );
         $this->errorLogger->setLogLevel([E_USER_DEPRECATED, E_DEPRECATED], 'InvalidLogLevel');
     }
 
@@ -94,30 +132,40 @@ class ErrorLoggerTest extends TestCase
     {
         $errorLogger = new ErrorLogger(new TestLoggerWithName());
         $errorLogger->setLoggerName(E_NOTICE, 'CustomLoggerName');
-        $errorLogger->log(Error::createFromPhpError(E_DEPRECATED, 'The message', 'test.php', 42));
-        $errorLogger->log(Error::createFromPhpError(E_ERROR, 'The message', 'test.php', 42));
-        $errorLogger->log(Error::createFromPhpError(E_NOTICE, 'The message', 'test.php', 42));
-        $errorLogger->log(Error::createFromPhpError(E_COMPILE_ERROR, 'The message', 'test.php', 42));
+        $errorLogger->log(
+            Error::createFromPhpError(E_DEPRECATED, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__)
+        );
+        $errorLogger->log(
+            Error::createFromPhpError(E_ERROR, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__)
+        );
+        $errorLogger->log(
+            Error::createFromPhpError(E_NOTICE, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__)
+        );
+        $errorLogger->log(
+            Error::createFromPhpError(E_COMPILE_ERROR, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__)
+        );
 
         $logger = $errorLogger->getPsrLogger();
 
         $this->assertCount(3, $logger->getLogs()['TestLogger']);
         $this->assertCount(1, $logger->getLogs()['CustomLoggerName'] ?? []);
-
     }
 
     public function testLoggerNameInvalid()
     {
         $logger = new TestLoggerInvalidWithName();
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The method `withName` must be return of type %s, %s given',
-            LoggerInterface::class,
-            $logger::class
-        ));
+        $this->expectExceptionMessage(
+            sprintf(
+                'The method `withName` must be return of type %s, %s given',
+                LoggerInterface::class,
+                $logger::class
+            )
+        );
         $errorLogger = new ErrorLogger($logger);
         $errorLogger->setLoggerName(E_NOTICE, 'CustomLoggerName');
-        $errorLogger->log(Error::createFromPhpError(E_NOTICE, 'The message', 'test.php', 42));
-
+        $errorLogger->log(
+            Error::createFromPhpError(E_NOTICE, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__)
+        );
     }
 }

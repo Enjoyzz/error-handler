@@ -140,7 +140,7 @@ class ErrorHandlerTest extends TestCase
             $this->createMock(ErrorLoggerInterface::class)
         );
         $errorHandler->addFatalError($addedFatalErrorLevels);
-        $this->assertTrue($errorHandler->errorHandler($severity, 'The Error Message', 'test.php', 42));
+        $this->assertTrue($errorHandler->errorHandler($severity, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__));
     }
 
 }

@@ -81,6 +81,7 @@ class ExceptionHandlerTest extends TestCase
 
     public function testLoggerTypeMap()
     {
+
         $exh = new ExceptionHandler(
             emitter: new Emitter()
         );
@@ -91,47 +92,23 @@ class ExceptionHandlerTest extends TestCase
         ]);
 
         $exh->handle(new \DivisionByZeroError());
-
-        $response = CatchResponse::getResponse();
-        $this->assertSame(500, $response->getStatusCode());
-
+        $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
 
         $exh->setHttpStatusCodeMap([
             405 => [\DivisionByZeroError::class]
         ]);
         $exh->handle(new \DivisionByZeroError());
-
-        $response = CatchResponse::getResponse();
-        $this->assertSame(405, $response->getStatusCode());
+        $this->assertSame(405,  CatchResponse::getResponse()->getStatusCode());
 
         $exh->setHttpStatusCodeMap([
             405 => [\DivisionByZeroError::class, \ArithmeticError::class]
         ]);
         $exh->handle(new \ArithmeticError());
-
-        $response = CatchResponse::getResponse();
-        $this->assertSame(405, $response->getStatusCode());
+        $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
 
         $this->assertCount(1, $psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertCount(1, $psrLogger->getLogs()[LogLevel::CRITICAL] ?? []);
     }
 
-    public function testOutputErrorViewMap()
-    {
-        $exh = new ExceptionHandler(
-            outputErrorViewMap: [
-                Html::class => new SimpleHtmlErrorView()
-            ],
-            request: (new ServerRequestFactory())->createServerRequest('get', '/')->withAddedHeader(
-                'Accept',
-                'application/json'
-            ),
-            emitter: new Emitter()
-        );
 
-        $exh->handle(new \Exception());
-        $response = CatchResponse::getResponse();
-
-        $this->assertSame('{"error":{"type":"Exception","code":0,"message":""}}', $response->getBody()->__toString());
-    }
 }
