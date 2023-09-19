@@ -38,7 +38,7 @@
     "scripts": {
         "phpunit": "@php ./vendor/bin/phpunit tests",
         "psalm": "@php ./vendor/bin/psalm",
-        "infection": "@php ./vendor/bin/infection"
+        "infection": "@php ./vendor/bin/infection --show-mutations"
 
     },
     "config": {

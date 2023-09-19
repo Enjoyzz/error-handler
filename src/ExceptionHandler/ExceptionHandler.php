@@ -29,7 +29,7 @@ use Throwable;
 final class ExceptionHandler implements ExceptionHandlerInterface
 {
     /**
-     * @var array<class-string<OutputError>, string[]>
+     * @var array<string|class-string<OutputError>, string[]>
      */
     private array $outputErrorMimeMap = [
         Json::class => ['application/json', 'text/json'],
@@ -172,6 +172,11 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     }
 
 
+    /**
+     * @param Throwable $error
+     * @param int $httpStatusCode
+     * @return list<string>|false
+     */
     private function getLogLevels(Throwable $error, int $httpStatusCode): array|false
     {
         if (array_key_exists($error::class, $this->loggerTypeMap)) {
@@ -199,7 +204,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     }
 
     /**
-     * @param array<class-string<OutputError>, class-string<ErrorView>> $outputErrorViewMap     * @return $this
+     * @param array<class-string<OutputError>, class-string<ErrorView>|ErrorView> $outputErrorViewMap     * @return $this
      */
     public function setOutputErrorViewMap(array $outputErrorViewMap): ExceptionHandler
     {

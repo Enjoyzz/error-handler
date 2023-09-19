@@ -161,7 +161,7 @@ class ErrorLoggerTest extends TestCase
             sprintf(
                 'The method `withName` must be return of type %s, %s given',
                 LoggerInterface::class,
-                $logger::class
+                get_debug_type($logger->withName(''))
             )
         );
         $errorLogger = new ErrorLogger($logger);

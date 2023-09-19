@@ -11,7 +11,7 @@ final class Error
         public string $file,
         public int $line,
         public string $type,
-        public int $code,
+        public int|string $code,
         public int $errorLevel,
         public string $traceString = '',
         public array $trace = [],

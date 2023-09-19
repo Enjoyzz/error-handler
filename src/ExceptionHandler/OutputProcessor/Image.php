@@ -44,7 +44,7 @@ final class Image extends OutputError
         return $response;
     }
 
-    private function createImage()
+    private function createImage(): \GdImage
     {
         $type = $this->getError()->type;
         $code = empty($this->getError()->code) ? "" : "[{$this->getError()->code}]";
@@ -55,7 +55,7 @@ final class Image extends OutputError
         $textColor = imagecolorallocate($image, 255, 255, 255);
         imagestring($image, 5, 10, 10, "$type $code", $textColor);
 
-        foreach (str_split($message, intval($size / 10)) as $line => $text) {
+        foreach (str_split($message, max(1, intval($size / 10))) as $line => $text) {
             imagestring($image, 5, 10, ($line * 18) + 28, $text, $textColor);
         }
 

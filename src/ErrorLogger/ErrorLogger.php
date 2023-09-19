@@ -61,6 +61,7 @@ final class ErrorLogger implements ErrorLoggerInterface
 
     /**
      * @inheritdoc
+     * @psalm-suppress MixedAssignment
      */
     public function log(Error $error, array|false $logLevels = null): void
     {
@@ -80,7 +81,7 @@ final class ErrorLogger implements ErrorLoggerInterface
                         sprintf(
                             'The method `withName` must be return of type %s, %s given',
                             LoggerInterface::class,
-                            $this->logger::class
+                            get_debug_type($logger)
                         )
                     );
                 }

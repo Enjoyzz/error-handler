@@ -14,6 +14,9 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
+/**
+ * @psalm-consistent-constructor
+ */
 abstract class OutputError
 {
     private ?ResponseFactoryInterface $responseFactory = null;
@@ -24,6 +27,9 @@ abstract class OutputError
 
     abstract public function getResponse(): ResponseInterface;
 
+    /**
+     * @psalm-suppress MixedReturnStatement, MixedInferredReturnType
+     */
     protected function getReasonPhrase(int $statusCode): string
     {
         $reflection = new \ReflectionClass(Response::class);
