@@ -5,6 +5,7 @@ namespace Enjoys\Tests\ErrorHandler;
 use Enjoys\ErrorHandler\ErrorHandler;
 use Enjoys\ErrorHandler\ErrorLogger\ErrorLogger;
 use Enjoys\ErrorHandler\ErrorLoggerInterface;
+use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
 use Enjoys\ErrorHandler\ExceptionHandlerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -24,16 +25,7 @@ class ErrorHandlerTest extends TestCase
     {
         restore_error_handler();
         restore_exception_handler();
-    }
-
-    public function cl1(\Exception $e)
-    {
-        echo '[' . __FUNCTION__ . '] ' . $e->getMessage();
-    }
-
-    public function cl2(\Exception $e)
-    {
-        echo '[' . __FUNCTION__ . '] ' . $e->getMessage();
+        TestLogger::reset();
     }
 
     public function testRegister()
@@ -44,8 +36,27 @@ class ErrorHandlerTest extends TestCase
         );
         $errorHandler->register();
 
+        $this->assertSame('0', ini_get('display_errors'));
         $this->assertSame([$errorHandler, 'exceptionHandler'], set_exception_handler(null));
         $this->assertSame([$errorHandler, 'errorHandler'], set_error_handler(null));
+        $this->assertTrue($errorHandler->isRegisteredShutdownFunction());
+    }
+
+    public function testUnRegister()
+    {
+        $errorHandler = new ErrorHandler(
+            $this->createMock(ExceptionHandlerInterface::class),
+            $this->createMock(ErrorLoggerInterface::class)
+        );
+
+        set_exception_handler(null);
+        set_error_handler(null);
+
+        $errorHandler->register();
+        $errorHandler->unregister();
+
+        $this->assertSame(null, set_exception_handler(null));
+        $this->assertSame(null, set_error_handler(null));
     }
 
     public function testExceptionHandler()
@@ -98,6 +109,7 @@ class ErrorHandlerTest extends TestCase
     {
         $invalidPath = uniqid('invalid_path');
         $this->expectException(\ErrorException::class);
+        $this->expectExceptionCode(0);
         $this->expectExceptionMessageMatches(
             sprintf(
                 '/PHP Warning: fopen\(%s\): Failed to open/',
@@ -117,18 +129,18 @@ class ErrorHandlerTest extends TestCase
     public function dataForTestErrorHandler()
     {
         return [
-            [true, E_USER_ERROR, 0, E_ALL, 'error'],
-            [false, E_USER_WARNING,],
-            [true, E_USER_WARNING, E_USER_WARNING,],
-            [false, E_WARNING, E_USER_WARNING,],
-            [true, E_DEPRECATED, E_DEPRECATED | E_USER_DEPRECATED,],
-            [true, E_USER_DEPRECATED, E_DEPRECATED | E_USER_DEPRECATED,],
-            [false, E_USER_DEPRECATED, 0,],
-            [true, E_ERROR, 0,],
-            [true, E_USER_NOTICE, E_ALL, E_ALL,],
-            [true, E_RECOVERABLE_ERROR, E_ALL,],
-            [false, E_RECOVERABLE_ERROR, 0, E_ALL,],
-            [false, E_USER_WARNING, E_USER_WARNING, E_ALL & ~E_USER_WARNING,],
+            [true, E_USER_ERROR, 0, E_ALL],
+            [false, E_USER_WARNING, 0, E_ALL, 'warning'],
+            [true, E_USER_WARNING, E_USER_WARNING, E_ALL],
+            [false, E_WARNING, E_USER_WARNING, E_ALL, 'warning'],
+            [true, E_DEPRECATED, E_DEPRECATED | E_USER_DEPRECATED, E_ALL],
+            [true, E_USER_DEPRECATED, E_DEPRECATED | E_USER_DEPRECATED, E_ALL],
+            [false, E_USER_DEPRECATED, 0, E_ALL, 'warning'],
+            [true, E_ERROR, 0, E_ALL],
+            [true, E_USER_NOTICE, E_ALL, E_ALL],
+            [true, E_RECOVERABLE_ERROR, E_ALL, E_ALL],
+            [false, E_RECOVERABLE_ERROR, 0, E_ALL, 'notice'],
+            [false, E_USER_WARNING, E_USER_WARNING, E_ALL & ~E_USER_WARNING, 'warning'],
         ];
     }
 
@@ -141,12 +153,20 @@ class ErrorHandlerTest extends TestCase
         $severity,
         $addedFatalErrorLevels = 0,
         $errorReporting = E_ALL,
-        $logLevel = 'warning'
+        $logLevel = null
     ) {
         error_reporting($errorReporting);
 
+        $errorHandler = new ErrorHandler(
+            $this->createMock(ExceptionHandlerInterface::class),
+            new ErrorLogger($logger = new TestLogger())
+        );
+        $errorHandler->addFatalError($addedFatalErrorLevels);
+
+
         if ($expectException) {
             $this->expectException(\ErrorException::class);
+            $this->expectExceptionCode(0);
             $this->expectExceptionMessageMatches(
                 sprintf(
                     '/%s:/',
@@ -154,22 +174,31 @@ class ErrorHandlerTest extends TestCase
                 )
             );
         }
-        $errorHandler = new ErrorHandler(
-            $this->createMock(ExceptionHandlerInterface::class),
-            new ErrorLogger($logger = new TestLogger())
-        );
-        $errorHandler->addFatalError($addedFatalErrorLevels);
+
         $this->assertTrue(
             $errorHandler->errorHandler($severity, sprintf('The Error Message: %s', __METHOD__), __FILE__, __LINE__)
         );
 
-//        $this->assertMatchesRegularExpression(
-//            sprintf(
-//                '/%s:/',
-//                ErrorHandler::ERROR_NAMES[$severity] ?? ''
-//            ),
-//            $logger->getLogs()[$logLevel][0] ?? ''
-//        );
+        $this->assertMatchesRegularExpression(
+            sprintf(
+                '/%s:/',
+                ErrorHandler::ERROR_NAMES[$severity] ?? ':'
+            ),
+            $logger->getLogs()[$logLevel][0] ?? ''
+        );
     }
 
+    public function testSetDisplayErrors()
+    {
+        ErrorHandler::displayErrors(true);
+        $this->assertSame('1', ini_get('display_errors'));
+    }
+
+    public function testSetLoggerForExceptionHandlerInConstruct()
+    {
+        $logger = $this->createMock(ErrorLoggerInterface::class);
+        $logger->expects($this->once())->method('log');
+        $errorHandler = new ErrorHandler(new ExceptionHandler(emitter: new Emitter()), $logger);
+        $errorHandler->exceptionHandler(new \RuntimeException());
+    }
 }

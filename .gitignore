@@ -4,3 +4,6 @@ node_modules/
 /vendor/
 /composer.lock
 /.phpunit.cache/
+/infection.html
+/.phpunit.result.cache
+/phpunit.xml

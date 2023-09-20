@@ -96,7 +96,9 @@ final class ErrorLogger implements ErrorLoggerInterface
                     ErrorHandler::ERROR_NAMES[$error->errorLevel] ?? '',
                     $error->message,
                     $error->file,
-                    $error->line
+                    $error->line,
+                    $error->code,
+                    $error->traceString
                 )
             );
         }

@@ -41,11 +41,19 @@ final class ErrorHandler
 
     private int $fatalErrorLevel = self::E_FATAL_ERROR;
 
+    private static bool $registeredShutdownFunction = false;
+
+
     public function __construct(
         private ExceptionHandlerInterface $exceptionHandler,
         private ErrorLoggerInterface $logger
     ) {
         $this->exceptionHandler->setErrorLogger($logger);
+    }
+
+    public function isRegisteredShutdownFunction(): bool
+    {
+        return self::$registeredShutdownFunction;
     }
 
 
@@ -68,7 +76,7 @@ final class ErrorHandler
         set_error_handler([$this, 'errorHandler']);
 
         // Handles fatal error.
-        register_shutdown_function([$this, 'shutdownFunction']);
+        register_shutdown_function([$this, 'shutdownFunction'], self::$registeredShutdownFunction = true);
     }
 
     /**
@@ -113,11 +121,11 @@ final class ErrorHandler
 
         if ($this->isFatalError($severity)) {
             throw new ErrorException(
-                sprintf('%s: %s', self::ERROR_NAMES[$severity] ?? '', $message),
-                0,
-                $severity,
-                $file,
-                $line
+                message: sprintf('%s: %s', self::ERROR_NAMES[$severity] ?? '', $message),
+                code: 0,
+                severity: $severity,
+                filename: $file,
+                line: $line
             );
         }
         return true;
@@ -170,8 +178,6 @@ final class ErrorHandler
     {
         ini_set('display_errors', $value ? '1' : '0');
     }
-
-
 
 
 }

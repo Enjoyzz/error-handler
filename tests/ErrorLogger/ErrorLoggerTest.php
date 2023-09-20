@@ -86,7 +86,7 @@ class ErrorLoggerTest extends TestCase
 
     public function testLogWithCustomLogFormat()
     {
-        $this->errorLogger->setLoggerFormatMessage(E_USER_ERROR, '%2$s in %3$s:%4$s');
+        $this->errorLogger->setLoggerFormatMessage(E_USER_ERROR, 'Error code: %5$s: %2$s in %3$s:%4$s');
 
         $this->errorLogger->log(
             Error::createFromPhpError(
@@ -99,11 +99,27 @@ class ErrorLoggerTest extends TestCase
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertSame(
             sprintf(
-                'The Error Message: Enjoys\Tests\ErrorHandler\ErrorLogger\ErrorLoggerTest::testLogWithCustomLogFormat in %s:%s',
+                'Error code: 0: The Error Message: %s in %s:%s',
+                __METHOD__,
                 __FILE__,
                 $line
             ),
             $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+        );
+
+        $this->errorLogger->log(
+            Error::createFromThrowable(
+                new \ErrorException('The error', 0, E_USER_ERROR, $file = __FILE__, $line = __LINE__)
+            )
+        );
+
+        $this->assertSame(
+            sprintf(
+                'Error code: 0: The error in %s:%s',
+                $file,
+                $line
+            ),
+            $this->psrLogger->getLogs()[LogLevel::ERROR][1]
         );
     }
 
