@@ -57,6 +57,8 @@ final class ErrorHandler
      */
     private array $httpStatusCodeMap = [];
 
+    private bool $registered = false;
+
 
     public function __construct(
         private ExceptionHandlerInterface $exceptionHandler,
@@ -80,6 +82,10 @@ final class ErrorHandler
      */
     public function register(bool $displayErrors = false): void
     {
+        if ($this->registered) {
+            return;
+        }
+
         self::displayErrors($displayErrors);
 
         // Handles throwable, echo output and exit.
@@ -90,6 +96,8 @@ final class ErrorHandler
 
         // Handles fatal error.
         register_shutdown_function([$this, 'shutdownFunction'], self::$registeredShutdownFunction = true);
+
+        $this->registered = true;
     }
 
     /**
@@ -97,8 +105,14 @@ final class ErrorHandler
      */
     public function unregister(): void
     {
+        if (!$this->registered) {
+            return;
+        }
+
         restore_error_handler();
         restore_exception_handler();
+
+        $this->registered = false;
     }
 
     /**

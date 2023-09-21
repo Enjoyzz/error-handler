@@ -41,6 +41,11 @@ class ErrorHandlerTest extends TestCase
         $this->assertSame([$errorHandler, 'exceptionHandler'], set_exception_handler(null));
         $this->assertSame([$errorHandler, 'errorHandler'], set_error_handler(null));
         $this->assertTrue($errorHandler->isRegisteredShutdownFunction());
+
+        $reflection = new \ReflectionClass($errorHandler);
+        $isRegistered = $reflection->getProperty('registered');
+        $isRegistered->setAccessible(true);
+        $this->assertTrue($isRegistered->getValue($errorHandler));
     }
 
     public function testUnRegister()
@@ -58,6 +63,11 @@ class ErrorHandlerTest extends TestCase
 
         $this->assertSame(null, set_exception_handler(null));
         $this->assertSame(null, set_error_handler(null));
+
+        $reflection = new \ReflectionClass($errorHandler);
+        $isRegistered = $reflection->getProperty('registered');
+        $isRegistered->setAccessible(true);
+        $this->assertFalse($isRegistered->getValue($errorHandler));
     }
 
     public function testExceptionHandler()
@@ -68,7 +78,13 @@ class ErrorHandlerTest extends TestCase
             $exceptionHandler,
             $this->createMock(ErrorLoggerInterface::class)
         );
+        $errorHandler->register();
+        $reflection = new \ReflectionClass($errorHandler);
+        $isRegistered = $reflection->getProperty('registered');
+        $isRegistered->setAccessible(true);
+        $this->assertTrue($isRegistered->getValue($errorHandler));
         $errorHandler->exceptionHandler(new \Exception());
+        $this->assertFalse($isRegistered->getValue($errorHandler));
     }
 
     public function testFatalError()
