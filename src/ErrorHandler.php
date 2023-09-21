@@ -231,6 +231,9 @@ final class ErrorHandler
         return $this;
     }
 
+    /**
+     * @return list<string>|false
+     */
     private function getLogLevels(Throwable $error): array|false
     {
         if (array_key_exists($error::class, $this->loggerTypeMap)) {
