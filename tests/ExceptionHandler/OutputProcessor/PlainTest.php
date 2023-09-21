@@ -2,6 +2,7 @@
 
 namespace Enjoys\Tests\ErrorHandler\ExceptionHandler\OutputProcessor;
 
+use Enjoys\ErrorHandler\Error;
 use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Plain;
@@ -10,6 +11,7 @@ use Enjoys\Tests\ErrorHandler\CatchResponse;
 use Enjoys\Tests\ErrorHandler\Emitter;
 use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
 
 class PlainTest extends TestCase
 {
@@ -57,9 +59,9 @@ class PlainTest extends TestCase
         );
         $exh->setOutputErrorViewMap([Plain::class => new class implements ErrorView {
 
-                public function getContent(OutputError $processor): string
+                public function getContent(Error $error, ResponseInterface $response): string
                 {
-                    return sprintf('%s: %s', $processor->getHttpStatusCode(), $processor->getError()->message);
+                    return sprintf('%s: %s', $response->getStatusCode(), $error->message);
                 }
             }]
         );

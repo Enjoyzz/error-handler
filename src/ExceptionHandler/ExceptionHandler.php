@@ -81,13 +81,13 @@ final class ExceptionHandler implements ExceptionHandlerInterface
 
     private function getErrorOutput(Throwable $error, int $httpStatusCode): OutputError
     {
+        $response = $this->responseFactory->createResponse($httpStatusCode);
+
         /** @var class-string<OutputError> $output */
         foreach ($this->outputErrorMimeMap as $output => $mimes) {
             foreach ($mimes as $mime) {
                 if (stripos($this->request->getHeaderLine('Accept'), $mime) !== false) {
-                    return (new $output())
-                        ->setResponseFactory($this->responseFactory)
-                        ->setHttpStatusCode($httpStatusCode)
+                    return (new $output($response))
                         ->setMimeType($mime)
                         ->setError(Error::createFromThrowable($error))
                         ->setView($this->getView($output));
@@ -95,9 +95,8 @@ final class ExceptionHandler implements ExceptionHandlerInterface
             }
         }
 
-        return (new Html())
+        return (new Html($response))
             ->setError(Error::createFromThrowable($error))
-            ->setHttpStatusCode($httpStatusCode)
             ->setView($this->getView(Html::class));
     }
 

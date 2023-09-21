@@ -12,20 +12,19 @@ final class Html extends OutputError
 
     public function getResponse(): ResponseInterface
     {
-        $response = $this->getResponseFactory()->createResponse($this->getHttpStatusCode());
-        $response->getBody()->write(
-            $this->getView()?->getContent($this) ?? $this->getDefaultBody()
+        $this->response->getBody()->write(
+            $this->getView()?->getContent($this->getError(), $this->response) ?? $this->getDefaultBody($this->response->getStatusCode(), $this->response->getReasonPhrase())
         );
-        return $response;
+        return $this->response;
     }
 
-    private function getDefaultBody(): string
+    private function getDefaultBody(int $code, string $phrase): string
     {
         return <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Error {$this->getHttpStatusCode()}. {$this->getHttpReasonPhrase()}</title>
+    <title>Error {$code}. {$phrase}</title>
     <style>
         body {
 
@@ -45,7 +44,7 @@ final class Html extends OutputError
 <p>If you are the system administrator of this resource then you should check
     the error log for details.</p>
 <p>
-    <code><b>{$this->getHttpStatusCode()}</b><br>{$this->getHttpReasonPhrase()}
+    <code><b>{$code}</b><br>{$phrase}
     </code>
 </p>
 <p>

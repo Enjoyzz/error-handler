@@ -2,6 +2,7 @@
 
 namespace Enjoys\Tests\ErrorHandler\ExceptionHandler\OutputProcessor;
 
+use Enjoys\ErrorHandler\Error;
 use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Image;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
@@ -10,6 +11,7 @@ use Enjoys\Tests\ErrorHandler\CatchResponse;
 use Enjoys\Tests\ErrorHandler\Emitter;
 use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
 
 class ImageTest extends TestCase
 {
@@ -62,7 +64,7 @@ class ImageTest extends TestCase
 
         $exh->setOutputErrorView(Image::class, new class implements ErrorView
         {
-            public function getContent(OutputError $processor): string
+            public function getContent(Error $error, ResponseInterface $response): string
             {
                 return 'response';
             }

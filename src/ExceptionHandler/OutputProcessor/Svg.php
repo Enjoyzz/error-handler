@@ -13,10 +13,9 @@ final class Svg extends OutputError
 
     public function getResponse(): ResponseInterface
     {
-        $response = $this->getResponseFactory()->createResponse($this->getHttpStatusCode());
         $code = empty($this->getError()->code) ? "" : "[{$this->getError()->code}]";
         $type = $this->getError()->type;
-        $response->getBody()->write(
+        $this->response->getBody()->write(
             <<<SVG
 <svg xmlns="http://www.w3.org/2000/svg" width="200">
     <text x="20" y="30" title="$type">
@@ -28,6 +27,6 @@ final class Svg extends OutputError
 </svg>
 SVG
         );
-        return $response;
+        return $this->response;
     }
 }

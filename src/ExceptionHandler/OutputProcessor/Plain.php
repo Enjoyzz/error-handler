@@ -16,17 +16,15 @@ final class Plain extends OutputError
 
     public function getResponse(): ResponseInterface
     {
-        $response = $this->getResponseFactory()->createResponse();
-
-        $body = $this->getView()?->getContent($this) ?? sprintf(
+        $body = $this->getView()?->getContent($this->getError(), $this->response) ?? sprintf(
             "%s%s\n%s",
             empty($this->getError()->code) ? "" : "[{$this->getError()->code}] ",
             $this->getError()->type,
             $this->getError()->message
         );
 
-        $response->getBody()->write($body);
-        return $response;
+        $this->response->getBody()->write($body);
+        return $this->response;
     }
 
 }

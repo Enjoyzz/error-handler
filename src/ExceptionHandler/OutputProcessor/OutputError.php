@@ -27,18 +27,11 @@ abstract class OutputError
     private ?Error $error = null;
     private ?ErrorView $view = null;
 
-    abstract public function getResponse(): ResponseInterface;
-
-    /**
-     * @psalm-suppress MixedReturnStatement, MixedInferredReturnType
-     * @throws ReflectionException
-     */
-    private function getReasonPhrase(int $statusCode): string
+    public function __construct(protected ResponseInterface $response)
     {
-        $phrases = (new ReflectionClass(Response::class))->getProperty('phrases');
-        $phrases->setAccessible(true);
-        return $phrases->getValue()[$statusCode] ?? 'Unknown error';
     }
+
+    abstract public function getResponse(): ResponseInterface;
 
     public function setError(Error $error): static
     {
@@ -46,21 +39,11 @@ abstract class OutputError
         return $this;
     }
 
-    public function getError(): Error
+    protected function getError(): Error
     {
         return $this->error ?? throw new RuntimeException('Error not set');
     }
 
-    final public function setResponseFactory(?ResponseFactoryInterface $responseFactory): static
-    {
-        $this->responseFactory = $responseFactory;
-        return $this;
-    }
-
-    protected function getResponseFactory(): ResponseFactoryInterface
-    {
-        return $this->responseFactory ?? new ResponseFactory();
-    }
 
     public function setMimeType(string $mimeType): static
     {
@@ -71,17 +54,6 @@ abstract class OutputError
     protected function getMimeType(): string
     {
         return $this->mimeType;
-    }
-
-    public function setHttpStatusCode(int $httpStatusCode): static
-    {
-        $this->httpStatusCode = $httpStatusCode;
-        return $this;
-    }
-
-    public function getHttpStatusCode(): int
-    {
-        return $this->httpStatusCode;
     }
 
     public function setView(?ErrorView $view = null): static
@@ -95,12 +67,5 @@ abstract class OutputError
         return $this->view;
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function getHttpReasonPhrase(): string
-    {
-        return $this->getReasonPhrase($this->httpStatusCode);
-    }
 
 }

@@ -21,11 +21,10 @@ final class Image extends OutputError
 
     public function getResponse(): ResponseInterface
     {
-        $response = $this->getResponseFactory()->createResponse($this->getHttpStatusCode());
-        $response->getBody()->write(
-            $this->getView()?->getContent($this) ?? $this->getDefaultBody()
+        $this->response->getBody()->write(
+            $this->getView()?->getContent($this->getError(), $this->response) ?? $this->getDefaultBody()
         );
-        return $response;
+        return $this->response;
     }
 
     /**

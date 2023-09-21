@@ -13,9 +13,7 @@ final class Json extends OutputError
     public function getResponse(): ResponseInterface
     {
 
-        $response = $this->getResponseFactory()->createResponse($this->getHttpStatusCode());
-
-        $body  = $this->getView()?->getContent($this) ?? json_encode(
+        $body  = $this->getView()?->getContent($this->getError(), $this->response) ?? json_encode(
             [
                 'error' => [
                     'type' => $this->getError()->type,
@@ -24,8 +22,8 @@ final class Json extends OutputError
                 ]
             ]
         );
-        $response->getBody()->write($body);
+        $this->response->getBody()->write($body);
 
-        return $response;
+        return $this->response;
     }
 }

@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace Enjoys\ErrorHandler\ExceptionHandler\View\Html;
 
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\ErrorHandler\Error;
 use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
+use Psr\Http\Message\ResponseInterface;
 
 final class SimpleHtmlErrorViewVerbose implements ErrorView
 {
-    public function getContent(OutputError $processor): string
+    public function getContent(Error $error, ResponseInterface $response): string
     {
         $message = htmlspecialchars(
             sprintf(
                 '%s(%s): %s',
-                $processor->getError()->type,
-                $processor->getError()->code,
-                $processor->getError()->message,
+                $error->type,
+                $error->code,
+                $error->message,
             )
         );
+
+        $code = $response->getStatusCode();
+        $phrase = $response->getReasonPhrase();
 
         return <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Error {$processor->getHttpStatusCode()}. {$processor->getHttpReasonPhrase()}</title>
+    <title>Error {$code}. {$phrase}</title>
     <style>
         body {
 
@@ -44,7 +48,7 @@ final class SimpleHtmlErrorViewVerbose implements ErrorView
 <p>If you are the system administrator of this resource then you should check
     the error log for details.</p>
 <p>
-    <code><b>{$processor->getHttpStatusCode()}</b><br>{$processor->getHttpReasonPhrase()}
+    <code><b>{$code}</b><br>{$phrase}
     </code>
     <code style="display: block; margin-top: 2em; color: grey">
     $message

@@ -20,20 +20,8 @@ $errorHandler->register();
 //
 $errorHandler->unregister();
 
-//
-$errorHandler->addFatalError(E_WARNING | E_USER_WARNING)
-
-//
-$errorHandler->resetFatalErrorLevel()
-```
-
-Настройки и методы ExceptionHandler
-
-```php
-/** @var Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler $exceptionHandler */
-
 // Заменяет всю карту сопоставлений httpStatusCodeMap
-$exceptionHandler->setHttpStatusCodeMap([
+$errorHandler->setHttpStatusCodeMap([
     403 => [
         UnAuthorizedException::class
     ],
@@ -45,7 +33,7 @@ $exceptionHandler->setHttpStatusCodeMap([
 ]);
 
 // Заменяет всю карту сопоставлений loggerTypeMap
-$exceptionHandler->setLoggerTypeMap([
+$errorHandler->setLoggerTypeMap([
     500 => [
         \Psr\Log\LogLevel::ERROR
     ],
@@ -55,6 +43,17 @@ $exceptionHandler->setLoggerTypeMap([
     ]
 ]);
 
+//
+$errorHandler->addFatalError(E_WARNING | E_USER_WARNING)
+
+//
+$errorHandler->resetFatalErrorLevel()
+```
+
+Настройки и методы ExceptionHandler
+
+```php
+/** @var Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler $exceptionHandler */
 
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Html;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Json;

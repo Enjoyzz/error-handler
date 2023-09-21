@@ -12,9 +12,7 @@ final class Xml extends OutputError
 {
     public function getResponse(): ResponseInterface
     {
-        $response = $this->getResponseFactory()->createResponse($this->getHttpStatusCode());
-
-        $response->getBody()->write(
+        $this->response->getBody()->write(
             <<<XML
 <?xml version="1.0" encoding="utf-8"?>
 <error>
@@ -24,6 +22,6 @@ final class Xml extends OutputError
 </error>
 XML
         );
-        return $response;
+        return $this->response;
     }
 }
