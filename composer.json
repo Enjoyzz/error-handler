@@ -1,6 +1,7 @@
 {
     "name": "enjoys/error-handler",
     "license": "MIT",
+    "description": "Error Handler",
     "authors": [
         {
             "name": "Enjoys",
