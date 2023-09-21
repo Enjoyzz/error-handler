@@ -8,6 +8,7 @@ use Enjoys\ErrorHandler\ErrorLoggerInterface;
 use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
 use Enjoys\ErrorHandler\ExceptionHandlerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
 
 class ErrorHandlerTest extends TestCase
 {
@@ -201,4 +202,66 @@ class ErrorHandlerTest extends TestCase
         $errorHandler = new ErrorHandler(new ExceptionHandler(emitter: new Emitter()), $logger);
         $errorHandler->exceptionHandler(new \RuntimeException());
     }
+
+    public function testHttpStatusCodeMap()
+    {
+
+        $errorHandler = new ErrorHandler(
+            new ExceptionHandler(emitter: new Emitter()),
+            $this->createMock(ErrorLoggerInterface::class)
+        );
+
+        $errorHandler->setHttpStatusCodeMap([
+            405 => [\DivisionByZeroError::class]
+        ]);
+
+        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $this->assertSame(405, CatchResponse::getResponse()?->getStatusCode());
+
+        $errorHandler->exceptionHandler(new \ArithmeticError());
+        $this->assertSame(500, CatchResponse::getResponse()?->getStatusCode());
+
+        $errorHandler->setHttpStatusCodeMap([
+            405 => ['\ArithmeticError']
+        ]);
+
+        $errorHandler->exceptionHandler(new \ArithmeticError());
+        $this->assertSame(405, CatchResponse::getResponse()?->getStatusCode());
+    }
+
+
+    public function testLoggerTypeMap()
+    {
+        $errorHandler = new ErrorHandler(
+            new ExceptionHandler(emitter: new Emitter()),
+            new ErrorLogger($psrLogger = new TestLogger())
+        );
+
+        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
+
+        $errorHandler->setLoggerTypeMap([
+            405 => [LogLevel::ERROR],
+            \ArithmeticError::class => [LogLevel::CRITICAL]
+        ]);
+
+        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
+
+        $errorHandler->setHttpStatusCodeMap([
+            405 => [\DivisionByZeroError::class]
+        ]);
+        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
+
+        $errorHandler->setHttpStatusCodeMap([
+            405 => [\DivisionByZeroError::class, \ArithmeticError::class]
+        ]);
+        $errorHandler->exceptionHandler(new \ArithmeticError());
+        $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
+
+        $this->assertCount(2, $psrLogger->getLogs()[LogLevel::ERROR] ?? []);
+        $this->assertCount(1, $psrLogger->getLogs()[LogLevel::CRITICAL] ?? []);
+    }
+
 }

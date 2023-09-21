@@ -7,7 +7,7 @@ namespace Enjoys\ErrorHandler\ExceptionHandler;
 
 
 use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ErrorLoggerInterface;
+use Enjoys\ErrorHandler\ErrorHandler;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Html;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Image;
 use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Json;
@@ -23,7 +23,6 @@ use HttpSoft\Message\ResponseFactory;
 use HttpSoft\ServerRequest\ServerRequestCreator;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LogLevel;
 use Throwable;
 
 final class ExceptionHandler implements ExceptionHandlerInterface
@@ -45,18 +44,6 @@ final class ExceptionHandler implements ExceptionHandlerInterface
      */
     private array $outputErrorViewMap;
 
-    /**
-     * @var array<int, list<string>>
-     */
-    private array $httpStatusCodeMap;
-
-    /**
-     * @var array<array-key, list<string>>
-     */
-    private array $loggerTypeMap;
-
-    private ?ErrorLoggerInterface $logger;
-
     private ServerRequestInterface $request;
 
     private EmitterInterface $emitter;
@@ -64,70 +51,33 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     private ResponseFactoryInterface $responseFactory;
 
     /**
-     * @param array<int, list<string>> $httpStatusCodeMap
      * @param array<class-string<OutputError>, class-string<ErrorView>|ErrorView> $outputErrorViewMap
-     * @param array<array-key, list<string>> $loggerTypeMap
      * @param ServerRequestInterface|null $request
      * @param EmitterInterface|null $emitter
      * @param ResponseFactoryInterface|null $responseFactory
      */
     public function __construct(
-        array $httpStatusCodeMap = [],
         array $outputErrorViewMap = [],
-        ?array $loggerTypeMap = null,
-        ?ErrorLoggerInterface $logger = null,
         ?ServerRequestInterface $request = null,
         ?EmitterInterface $emitter = null,
         ?ResponseFactoryInterface $responseFactory = null,
     ) {
-        $this->logger = $logger;
         $this->request = $request ?? ServerRequestCreator::createFromGlobals();
         $this->emitter = $emitter ?? new SapiEmitter();
         $this->responseFactory = $responseFactory ?? new ResponseFactory();
-        $this->httpStatusCodeMap = $httpStatusCodeMap;
         $this->outputErrorViewMap = $outputErrorViewMap;
-        $this->loggerTypeMap = $loggerTypeMap ?? [500 => [LogLevel::ERROR]];
     }
 
     /**
      * @throws Throwable
      */
-    public function handle(Throwable $error): void
+    public function handle(Throwable $error, int $httpStatusCode = ErrorHandler::DEFAULT_HTTP_STATUS_CODE): void
     {
-        $httpStatusCode = $this->getStatusCode($error);
-
-        $this->logger?->log(
-            Error::createFromThrowable($error),
-            $this->getLogLevels($error, $httpStatusCode)
-        );
-
         $response = $this->getErrorOutput($error, $httpStatusCode)
             ->getResponse();
 
         $this->emitter->emit($response);
     }
-
-
-    /**
-     * @param array<int, list<string>> $httpStatusCodeMap
-     */
-    public function setHttpStatusCodeMap(array $httpStatusCodeMap): ExceptionHandler
-    {
-        $this->httpStatusCodeMap = $httpStatusCodeMap;
-        return $this;
-    }
-
-
-    private function getStatusCode(Throwable $error): int
-    {
-        foreach ($this->httpStatusCodeMap as $statusCode => $stack) {
-            if (in_array($error::class, $stack, true) || in_array('\\' . $error::class, $stack, true)) {
-                return $statusCode;
-            }
-        }
-        return ExceptionHandlerInterface::DEFAULT_STATUS_CODE;
-    }
-
 
     private function getErrorOutput(Throwable $error, int $httpStatusCode): OutputError
     {
@@ -158,36 +108,6 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     }
 
     /**
-     * @param array<array-key, list<string>> $loggerTypeMap
-     */
-    public function setLoggerTypeMap(array $loggerTypeMap): ExceptionHandler
-    {
-        $this->loggerTypeMap = $loggerTypeMap;
-        return $this;
-    }
-
-
-    /**
-     * @param Throwable $error
-     * @param int $httpStatusCode
-     * @return list<string>|false
-     */
-    private function getLogLevels(Throwable $error, int $httpStatusCode): array|false
-    {
-        if (array_key_exists($error::class, $this->loggerTypeMap)) {
-            return $this->loggerTypeMap[$error::class];
-        }
-
-        return $this->loggerTypeMap[$httpStatusCode] ?? false;
-    }
-
-    public function setErrorLogger(?ErrorLoggerInterface $logger): ExceptionHandlerInterface
-    {
-        $this->logger = $logger;
-        return $this;
-    }
-
-    /**
      * @param class-string<OutputError> $type
      * @param class-string<ErrorView>|ErrorView $template
      * @return ExceptionHandlerInterface
@@ -199,7 +119,7 @@ final class ExceptionHandler implements ExceptionHandlerInterface
     }
 
     /**
-     * @param array<class-string<OutputError>, class-string<ErrorView>|ErrorView> $outputErrorViewMap     * @return $this
+     * @param array<class-string<OutputError>, class-string<ErrorView>|ErrorView> $outputErrorViewMap * @return $this
      */
     public function setOutputErrorViewMap(array $outputErrorViewMap): ExceptionHandler
     {

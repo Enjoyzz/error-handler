@@ -10,9 +10,5 @@ use Throwable;
 
 interface ExceptionHandlerInterface
 {
-    public const DEFAULT_STATUS_CODE = 500;
-
-    public function handle(Throwable $error): void;
-
-    public function setErrorLogger(?ErrorLoggerInterface $logger): ExceptionHandlerInterface;
+    public function handle(Throwable $error, int $httpStatusCode = ErrorHandler::DEFAULT_HTTP_STATUS_CODE): void;
 }

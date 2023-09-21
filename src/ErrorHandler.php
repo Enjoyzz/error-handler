@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Enjoys\ErrorHandler;
 
+use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
 use ErrorException;
+use Psr\Log\LogLevel;
 use Throwable;
 
 final class ErrorHandler
@@ -39,16 +41,27 @@ final class ErrorHandler
         | E_COMPILE_WARNING
         | E_USER_ERROR;
 
+    public const DEFAULT_HTTP_STATUS_CODE = 500;
+
     private int $fatalErrorLevel = self::E_FATAL_ERROR;
 
     private static bool $registeredShutdownFunction = false;
+
+    /**
+     * @var array<array-key, list<string>>
+     */
+    private array $loggerTypeMap = [500 => [LogLevel::ERROR]];
+
+    /**
+     * @var array<int, list<string>>
+     */
+    private array $httpStatusCodeMap = [];
 
 
     public function __construct(
         private ExceptionHandlerInterface $exceptionHandler,
         private ErrorLoggerInterface $logger
     ) {
-        $this->exceptionHandler->setErrorLogger($logger);
     }
 
     public function isRegisteredShutdownFunction(): bool
@@ -97,7 +110,13 @@ final class ErrorHandler
     {
         // disable error capturing to avoid recursive errors while handling exceptions
         $this->unregister();
-        $this->exceptionHandler->handle($error);
+
+        $this->logger->log(
+            Error::createFromThrowable($error),
+            $this->getLogLevels($error)
+        );
+
+        $this->exceptionHandler->handle($error, $this->getStatusCode($error));
     }
 
     /**
@@ -179,5 +198,42 @@ final class ErrorHandler
         ini_set('display_errors', $value ? '1' : '0');
     }
 
+    /**
+     * @param array<int, list<string>> $httpStatusCodeMap
+     */
+    public function setHttpStatusCodeMap(array $httpStatusCodeMap): ErrorHandler
+    {
+        $this->httpStatusCodeMap = $httpStatusCodeMap;
+        return $this;
+    }
+
+
+    /**
+     * @param array<array-key, list<string>> $loggerTypeMap
+     */
+    public function setLoggerTypeMap(array $loggerTypeMap): ErrorHandler
+    {
+        $this->loggerTypeMap = $loggerTypeMap;
+        return $this;
+    }
+
+    private function getLogLevels(Throwable $error): array|false
+    {
+        if (array_key_exists($error::class, $this->loggerTypeMap)) {
+            return $this->loggerTypeMap[$error::class];
+        }
+
+        return $this->loggerTypeMap[$this->getStatusCode($error)] ?? false;
+    }
+
+    private function getStatusCode(Throwable $error): int
+    {
+        foreach ($this->httpStatusCodeMap as $statusCode => $stack) {
+            if (in_array($error::class, $stack, true) || in_array('\\' . $error::class, $stack, true)) {
+                return $statusCode;
+            }
+        }
+        return self::DEFAULT_HTTP_STATUS_CODE;
+    }
 
 }
