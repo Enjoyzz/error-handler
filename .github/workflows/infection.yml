@@ -1,0 +1,52 @@
+name: infection
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
+
+      - name: Check output
+        run: echo ${{ steps.vars.outputs.short_ref }}
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+          ini-values: |
+            date.timezone='UTC'
+            memory_limit=-1
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-versions }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-versions }}-
+
+      - name: Update composer
+        run: composer self-update
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run infection
+        run: |
+          vendor/bin/infection -j2  --ignore-msi-with-no-mutations --only-covered
+        env:
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
