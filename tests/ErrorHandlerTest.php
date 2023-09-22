@@ -2,6 +2,7 @@
 
 namespace Enjoys\Tests\ErrorHandler;
 
+use Enjoys\ErrorHandler\Error;
 use Enjoys\ErrorHandler\ErrorHandler;
 use Enjoys\ErrorHandler\ErrorLogger\ErrorLogger;
 use Enjoys\ErrorHandler\ErrorLoggerInterface;
@@ -201,7 +202,7 @@ class ErrorHandlerTest extends TestCase
                 '/%s:/',
                 ErrorHandler::ERROR_NAMES[$severity] ?? ':'
             ),
-            $logger->getLogs()[$logLevel][0] ?? ''
+            $logger->getLogs()[$logLevel][0]['message'] ?? ''
         );
     }
 
@@ -278,6 +279,22 @@ class ErrorHandlerTest extends TestCase
 
         $this->assertCount(2, $psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertCount(1, $psrLogger->getLogs()[LogLevel::CRITICAL] ?? []);
+    }
+
+    public function testLogContext()
+    {
+        $errorHandler = new ErrorHandler(
+            new ExceptionHandler(emitter: new Emitter()),
+            new ErrorLogger($psrLogger = new TestLogger())
+        );
+        $errorHandler->setLogContextCallable(function ($e){
+            return ['param_type' => $e::class];
+        });
+        $errorHandler->exceptionHandler(new \Exception());
+        $this->assertSame(['param_type' => Error::class], $psrLogger->getLogs()[LogLevel::ERROR][0]['context'] ?? []);
+        $errorHandler->errorHandler(E_WARNING, 'The warning', '', 0);
+        $this->assertSame(['param_type' => Error::class], $psrLogger->getLogs()[LogLevel::WARNING][0]['context'] ?? []);
+
     }
 
 }

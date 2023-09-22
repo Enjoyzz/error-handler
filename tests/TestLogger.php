@@ -53,7 +53,10 @@ class TestLogger implements LoggerInterface
 
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        self::$logs[$level][] = $message;
+        self::$logs[$level][] = [
+            'message' => $message,
+            'context' => $context
+        ];
     }
 
     public static function reset(): void

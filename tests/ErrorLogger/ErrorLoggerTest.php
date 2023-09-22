@@ -38,7 +38,7 @@ class ErrorLoggerTest extends TestCase
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertSame(
             sprintf('PHP Fatal Error: error in %s on line %s', $file, $line),
-            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]['message']
         );
     }
 
@@ -54,7 +54,7 @@ class ErrorLoggerTest extends TestCase
 
         $this->assertStringContainsString(
             'Exception: error in ',
-            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]['message']
         );
     }
 
@@ -80,7 +80,7 @@ class ErrorLoggerTest extends TestCase
                 __FILE__,
                 $line
             ),
-            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]['message']
         );
     }
 
@@ -104,7 +104,7 @@ class ErrorLoggerTest extends TestCase
                 __FILE__,
                 $line
             ),
-            $this->psrLogger->getLogs()[LogLevel::ERROR][0]
+            $this->psrLogger->getLogs()[LogLevel::ERROR][0]['message']
         );
 
         $this->errorLogger->log(
@@ -119,7 +119,7 @@ class ErrorLoggerTest extends TestCase
                 $file,
                 $line
             ),
-            $this->psrLogger->getLogs()[LogLevel::ERROR][1]
+            $this->psrLogger->getLogs()[LogLevel::ERROR][1]['message']
         );
     }
 
