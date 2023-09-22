@@ -44,6 +44,9 @@ $errorHandler->setLoggerTypeMap([
 ]);
 
 //
+$errorHandler->setLogContextCallable();
+
+//
 $errorHandler->addFatalError(E_WARNING | E_USER_WARNING)
 
 //

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Enjoys\ErrorHandler;
 
-use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
 use ErrorException;
 use Psr\Log\LogLevel;
 use Throwable;
@@ -57,8 +56,12 @@ final class ErrorHandler
      */
     private array $httpStatusCodeMap = [];
 
-    private bool $registered = false;
+    /**
+     * @var callable(Error):array|null
+     */
+    private $logContextCallable = null;
 
+    private bool $registered = false;
 
     public function __construct(
         private ExceptionHandlerInterface $exceptionHandler,
@@ -126,8 +129,9 @@ final class ErrorHandler
         $this->unregister();
 
         $this->logger->log(
-            Error::createFromThrowable($error),
-            $this->getLogLevels($error)
+            error: Error::createFromThrowable($error),
+            logLevels: $this->getLogLevels($error),
+            logContextCallable: $this->logContextCallable
         );
 
         $this->exceptionHandler->handle($error, $this->getStatusCode($error));
@@ -145,7 +149,10 @@ final class ErrorHandler
     public function errorHandler(int $severity, string $message, string $file, int $line): bool
     {
         // Logging all php errors
-        $this->logger->log(Error::createFromPhpError($severity, $message, $file, $line));
+        $this->logger->log(
+            error: Error::createFromPhpError($severity, $message, $file, $line),
+            logContextCallable: $this->logContextCallable
+        );
 
         if (!(error_reporting() & $severity)) {
             // This error code is not included in error_reporting.
@@ -218,6 +225,15 @@ final class ErrorHandler
     public function setHttpStatusCodeMap(array $httpStatusCodeMap): ErrorHandler
     {
         $this->httpStatusCodeMap = $httpStatusCodeMap;
+        return $this;
+    }
+
+    /**
+     * @param callable(Error):array|null $logContextCallable
+     */
+    public function setLogContextCallable(?callable $logContextCallable): ErrorHandler
+    {
+        $this->logContextCallable = $logContextCallable;
         return $this;
     }
 
