@@ -1,14 +1,15 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler\ExceptionHandler\OutputProcessor;
+namespace Enjoys\Tests\Oophps\ExceptionHandler\OutputProcessor;
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Plain;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
-use Enjoys\Tests\ErrorHandler\CatchResponse;
-use Enjoys\Tests\ErrorHandler\Emitter;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ExceptionHandler\ExceptionHandler;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Plain;
+use Enjoys\Oophps\ExceptionHandler\View\ErrorView;
+use Enjoys\Tests\Oophps\CatchResponse;
+use Enjoys\Tests\Oophps\Emitter;
+use Exception;
 use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -37,7 +38,7 @@ class PlainTest extends TestCase
             emitter: new Emitter()
         );
 
-        $exh->handle(new \Exception('The Error'));
+        $exh->handle(new Exception('The Error'));
         $this->assertSame(
             "Exception\nThe Error",
             CatchResponse::getResponse()->getBody()->__toString()
@@ -66,7 +67,7 @@ class PlainTest extends TestCase
             }]
         );
 
-        $exh->handle(new \Exception('The error'));
+        $exh->handle(new Exception('The error'));
         $this->assertSame(
             '500: The error',
             CatchResponse::getResponse()->getBody()->__toString()

@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor;
+namespace Enjoys\Oophps\ExceptionHandler\OutputProcessor;
 
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ExceptionHandler\View\ErrorView;
 use HttpSoft\Message\Response;
 use HttpSoft\Message\ResponseFactory;
 use Psr\Http\Message\ResponseFactoryInterface;

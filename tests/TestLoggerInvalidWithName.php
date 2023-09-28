@@ -1,9 +1,10 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler;
+namespace Enjoys\Tests\Oophps;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Stringable;
 
 class TestLoggerInvalidWithName extends TestLogger
 {
@@ -14,7 +15,7 @@ class TestLoggerInvalidWithName extends TestLogger
         return true;
     }
 
-    public function log($level, \Stringable|string $message, array $context = []): void
+    public function log($level, Stringable|string $message, array $context = []): void
     {
         self::$logs[$this->name][$level][] = $message;
     }

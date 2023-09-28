@@ -28,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Enjoys\\ErrorHandler\\": "src/"
+            "Enjoys\\Oophps\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Enjoys\\Tests\\ErrorHandler\\": "tests/"
+            "Enjoys\\Tests\\Oophps\\": "tests/"
         }
     },
     "scripts": {

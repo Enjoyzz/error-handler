@@ -1,7 +1,8 @@
 <?php
 
-namespace Enjoys\ErrorHandler;
+namespace Enjoys\Oophps;
 
+use ErrorException;
 use Throwable;
 
 final class Error
@@ -40,7 +41,7 @@ final class Error
             line: $error->getLine(),
             type: $error::class,
             code: $error->getCode(),
-            errorLevel: ($error instanceof \ErrorException) ? $error->getSeverity() : 0,
+            errorLevel: ($error instanceof ErrorException) ? $error->getSeverity() : 0,
             traceString: $error->getTraceAsString(),
             trace: $error->getTrace(),
         );

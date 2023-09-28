@@ -3,25 +3,25 @@
 Быстрый запуск
 
 ```php
-$exceptionHandler = new \Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler();
-$errorLogger = new \Enjoys\ErrorHandler\ErrorLogger\ErrorLogger(\Psr\Log\LoggerInterface $psr3logger);
-$errorHandler = new \Enjoys\ErrorHandler\ErrorHandler($exceptionHandler, $errorLogger);
-$errorHandler->register();
+$exceptionHandler = new \Enjoys\Oophps\ExceptionHandler\ExceptionHandler();
+$errorLogger = new \Enjoys\Oophps\ErrorLogger\ErrorLogger(\Psr\Log\LoggerInterface $psr3logger);
+$oophps = new \Enjoys\Oophps\ErrorHandler($exceptionHandler, $errorLogger);
+$oophps->register();
 ```
 
 Настройки и методы ErrorHandler
 
 ```php
-/** @var Enjoys\ErrorHandler\ErrorHandler $errorHandler */
+/** @var Enjoys\Oophps\ErrorHandler $oophps */
 
 //
-$errorHandler->register();
+$oophps->register();
 
 //
-$errorHandler->unregister();
+$oophps->unregister();
 
 // Заменяет всю карту сопоставлений httpStatusCodeMap
-$errorHandler->setHttpStatusCodeMap([
+$oophps->setHttpStatusCodeMap([
     403 => [
         UnAuthorizedException::class
     ],
@@ -33,7 +33,7 @@ $errorHandler->setHttpStatusCodeMap([
 ]);
 
 // Заменяет всю карту сопоставлений loggerTypeMap
-$errorHandler->setLoggerTypeMap([
+$oophps->setLoggerTypeMap([
     500 => [
         \Psr\Log\LogLevel::ERROR
     ],
@@ -44,24 +44,24 @@ $errorHandler->setLoggerTypeMap([
 ]);
 
 //
-$errorHandler->setLogContextCallable();
+$oophps->setLogContextCallable();
 
 //
-$errorHandler->addFatalError(E_WARNING | E_USER_WARNING)
+$oophps->addFatalError(E_WARNING | E_USER_WARNING)
 
 //
-$errorHandler->resetFatalErrorLevel()
+$oophps->resetFatalErrorLevel()
 ```
 
 Настройки и методы ExceptionHandler
 
 ```php
-/** @var Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler $exceptionHandler */
+/** @var Enjoys\Oophps\ExceptionHandler\ExceptionHandler $exceptionHandler */
 
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Html;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Json;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Xml;
-use Enjoys\ErrorHandler\ExceptionHandler\View\Html\SimpleHtmlErrorViewVeryVerbose;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Html;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Json;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Xml;
+use Enjoys\Oophps\ExceptionHandler\View\Html\SimpleHtmlErrorViewVeryVerbose;
 
 // Заменяет всю карту сопоставлений outputErrorViewMap
 $exceptionHandler->setOutputErrorViewMap([
@@ -73,9 +73,10 @@ $exceptionHandler->setOutputErrorViewMap([
 $exceptionHandler->setOutputErrorView(Xml::class, ImplementationOfErrorViewInterface::class);
 ```
 Настройки и методы ErrorLogger
+
 ```php
 
-/** @var \Enjoys\ErrorHandler\ErrorLogger\ErrorLogger $logger */
+/** @var \Enjoys\Oophps\ErrorLogger\ErrorLogger $logger */
 
 // Устанавливает дефолтный уровень лога, используется если не определено иное (по-умолчанию LogLevel::NOTICE)
 $logger->setDefaultLogLevel(\Psr\Log\LogLevel::INFO);

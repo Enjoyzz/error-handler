@@ -1,14 +1,16 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler\ExceptionHandler\OutputProcessor;
+namespace Enjoys\Tests\Oophps\ExceptionHandler\OutputProcessor;
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Image;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
-use Enjoys\Tests\ErrorHandler\CatchResponse;
-use Enjoys\Tests\ErrorHandler\Emitter;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ExceptionHandler\ExceptionHandler;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Image;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\Oophps\ExceptionHandler\View\ErrorView;
+use Enjoys\Tests\Oophps\CatchResponse;
+use Enjoys\Tests\Oophps\Emitter;
+use Exception;
+use GdImage;
 use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -38,13 +40,13 @@ class ImageTest extends TestCase
             emitter: new Emitter()
         );
 
-        $exh->handle(new \Exception('The error'));
+        $exh->handle(new Exception('The error'));
 
         $response = CatchResponse::getResponse();
         $body = $response->getBody()->__toString();
         $this->assertNotEmpty($body);
 
-        $this->assertInstanceOf(\GdImage::class, imagecreatefromstring($body));
+        $this->assertInstanceOf(GdImage::class, imagecreatefromstring($body));
         $size = getimagesizefromstring($body);
         $this->assertSame(200, $size[0]);
         $this->assertSame(200, $size[1]);
@@ -70,7 +72,7 @@ class ImageTest extends TestCase
             }
         });
 
-        $exh->handle(new \Exception('The error'));
+        $exh->handle(new Exception('The error'));
 
         $this->assertSame('response', CatchResponse::getResponse()->getBody()->__toString());
 

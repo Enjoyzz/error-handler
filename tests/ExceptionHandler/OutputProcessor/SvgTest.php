@@ -1,10 +1,11 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler\ExceptionHandler\OutputProcessor;
+namespace Enjoys\Tests\Oophps\ExceptionHandler\OutputProcessor;
 
-use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
-use Enjoys\Tests\ErrorHandler\CatchResponse;
-use Enjoys\Tests\ErrorHandler\Emitter;
+use Enjoys\Oophps\ExceptionHandler\ExceptionHandler;
+use Enjoys\Tests\Oophps\CatchResponse;
+use Enjoys\Tests\Oophps\Emitter;
+use Exception;
 use HttpSoft\Message\Response;
 use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
@@ -41,7 +42,7 @@ class SvgTest extends TestCase
             }
         );
 
-        $exh->handle(new \Exception('The error'));
+        $exh->handle(new Exception('The error'));
         $response = CatchResponse::getResponse();
         $this->assertSame('Another responseFactory with custom reason phrase', $response->getReasonPhrase());
         $this->assertSame(

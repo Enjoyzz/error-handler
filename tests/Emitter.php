@@ -1,6 +1,6 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler;
+namespace Enjoys\Tests\Oophps;
 
 use HttpSoft\Emitter\EmitterInterface;
 use Psr\Http\Message\ResponseInterface;

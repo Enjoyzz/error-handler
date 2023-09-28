@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor;
+namespace Enjoys\Oophps\ExceptionHandler\OutputProcessor;
 
 use Psr\Http\Message\ResponseInterface;
 

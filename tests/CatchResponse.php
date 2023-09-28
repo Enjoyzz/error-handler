@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 
-namespace Enjoys\Tests\ErrorHandler;
+namespace Enjoys\Tests\Oophps;
 
 
 use Psr\Http\Message\ResponseInterface;

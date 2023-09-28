@@ -1,15 +1,21 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler;
+namespace Enjoys\Tests\Oophps;
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ErrorHandler;
-use Enjoys\ErrorHandler\ErrorLogger\ErrorLogger;
-use Enjoys\ErrorHandler\ErrorLoggerInterface;
-use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
-use Enjoys\ErrorHandler\ExceptionHandlerInterface;
+use ArithmeticError;
+use DivisionByZeroError;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ErrorHandler;
+use Enjoys\Oophps\ErrorLogger\ErrorLogger;
+use Enjoys\Oophps\ErrorLoggerInterface;
+use Enjoys\Oophps\ExceptionHandler\ExceptionHandler;
+use Enjoys\Oophps\ExceptionHandlerInterface;
+use ErrorException;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use ReflectionClass;
+use RuntimeException;
 
 class ErrorHandlerTest extends TestCase
 {
@@ -43,7 +49,7 @@ class ErrorHandlerTest extends TestCase
         $this->assertSame([$errorHandler, 'errorHandler'], set_error_handler(null));
         $this->assertTrue($errorHandler->isRegisteredShutdownFunction());
 
-        $reflection = new \ReflectionClass($errorHandler);
+        $reflection = new ReflectionClass($errorHandler);
         $isRegistered = $reflection->getProperty('registered');
         $isRegistered->setAccessible(true);
         $this->assertTrue($isRegistered->getValue($errorHandler));
@@ -65,7 +71,7 @@ class ErrorHandlerTest extends TestCase
         $this->assertSame(null, set_exception_handler(null));
         $this->assertSame(null, set_error_handler(null));
 
-        $reflection = new \ReflectionClass($errorHandler);
+        $reflection = new ReflectionClass($errorHandler);
         $isRegistered = $reflection->getProperty('registered');
         $isRegistered->setAccessible(true);
         $this->assertFalse($isRegistered->getValue($errorHandler));
@@ -80,11 +86,11 @@ class ErrorHandlerTest extends TestCase
             $this->createMock(ErrorLoggerInterface::class)
         );
         $errorHandler->register();
-        $reflection = new \ReflectionClass($errorHandler);
+        $reflection = new ReflectionClass($errorHandler);
         $isRegistered = $reflection->getProperty('registered');
         $isRegistered->setAccessible(true);
         $this->assertTrue($isRegistered->getValue($errorHandler));
-        $errorHandler->exceptionHandler(new \Exception());
+        $errorHandler->exceptionHandler(new Exception());
         $this->assertFalse($isRegistered->getValue($errorHandler));
     }
 
@@ -126,7 +132,7 @@ class ErrorHandlerTest extends TestCase
     public function testShutdownFunction()
     {
         $invalidPath = uniqid('invalid_path');
-        $this->expectException(\ErrorException::class);
+        $this->expectException(ErrorException::class);
         $this->expectExceptionCode(0);
         $this->expectExceptionMessageMatches(
             sprintf(
@@ -183,7 +189,7 @@ class ErrorHandlerTest extends TestCase
 
 
         if ($expectException) {
-            $this->expectException(\ErrorException::class);
+            $this->expectException(ErrorException::class);
             $this->expectExceptionCode(0);
             $this->expectExceptionMessageMatches(
                 sprintf(
@@ -217,7 +223,7 @@ class ErrorHandlerTest extends TestCase
         $logger = $this->createMock(ErrorLoggerInterface::class);
         $logger->expects($this->once())->method('log');
         $errorHandler = new ErrorHandler(new ExceptionHandler(emitter: new Emitter()), $logger);
-        $errorHandler->exceptionHandler(new \RuntimeException());
+        $errorHandler->exceptionHandler(new RuntimeException());
     }
 
     public function testHttpStatusCodeMap()
@@ -229,20 +235,20 @@ class ErrorHandlerTest extends TestCase
         );
 
         $errorHandler->setHttpStatusCodeMap([
-            405 => [\DivisionByZeroError::class]
+            405 => [DivisionByZeroError::class]
         ]);
 
-        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $errorHandler->exceptionHandler(new DivisionByZeroError());
         $this->assertSame(405, CatchResponse::getResponse()?->getStatusCode());
 
-        $errorHandler->exceptionHandler(new \ArithmeticError());
+        $errorHandler->exceptionHandler(new ArithmeticError());
         $this->assertSame(500, CatchResponse::getResponse()?->getStatusCode());
 
         $errorHandler->setHttpStatusCodeMap([
             405 => ['\ArithmeticError']
         ]);
 
-        $errorHandler->exceptionHandler(new \ArithmeticError());
+        $errorHandler->exceptionHandler(new ArithmeticError());
         $this->assertSame(405, CatchResponse::getResponse()?->getStatusCode());
     }
 
@@ -254,27 +260,27 @@ class ErrorHandlerTest extends TestCase
             new ErrorLogger($psrLogger = new TestLogger())
         );
 
-        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $errorHandler->exceptionHandler(new DivisionByZeroError());
         $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
 
         $errorHandler->setLoggerTypeMap([
             405 => [LogLevel::ERROR],
-            \ArithmeticError::class => [LogLevel::CRITICAL]
+            ArithmeticError::class => [LogLevel::CRITICAL]
         ]);
 
-        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $errorHandler->exceptionHandler(new DivisionByZeroError());
         $this->assertSame(500, CatchResponse::getResponse()->getStatusCode());
 
         $errorHandler->setHttpStatusCodeMap([
-            405 => [\DivisionByZeroError::class]
+            405 => [DivisionByZeroError::class]
         ]);
-        $errorHandler->exceptionHandler(new \DivisionByZeroError());
+        $errorHandler->exceptionHandler(new DivisionByZeroError());
         $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
 
         $errorHandler->setHttpStatusCodeMap([
-            405 => [\DivisionByZeroError::class, \ArithmeticError::class]
+            405 => [DivisionByZeroError::class, ArithmeticError::class]
         ]);
-        $errorHandler->exceptionHandler(new \ArithmeticError());
+        $errorHandler->exceptionHandler(new ArithmeticError());
         $this->assertSame(405, CatchResponse::getResponse()->getStatusCode());
 
         $this->assertCount(2, $psrLogger->getLogs()[LogLevel::ERROR] ?? []);
@@ -290,7 +296,7 @@ class ErrorHandlerTest extends TestCase
         $errorHandler->setLogContextCallable(function ($e){
             return ['param_type' => $e::class];
         });
-        $errorHandler->exceptionHandler(new \Exception());
+        $errorHandler->exceptionHandler(new Exception());
         $this->assertSame(['param_type' => Error::class], $psrLogger->getLogs()[LogLevel::ERROR][0]['context'] ?? []);
         $errorHandler->errorHandler(E_WARNING, 'The warning', '', 0);
         $this->assertSame(['param_type' => Error::class], $psrLogger->getLogs()[LogLevel::WARNING][0]['context'] ?? []);

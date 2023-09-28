@@ -1,15 +1,18 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler\ErrorLogger;
+namespace Enjoys\Tests\Oophps\ErrorLogger;
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ErrorLogger\ErrorLogger;
-use Enjoys\Tests\ErrorHandler\TestLogger;
-use Enjoys\Tests\ErrorHandler\TestLoggerInvalidWithName;
-use Enjoys\Tests\ErrorHandler\TestLoggerWithName;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ErrorLogger\ErrorLogger;
+use Enjoys\Tests\Oophps\TestLogger;
+use Enjoys\Tests\Oophps\TestLoggerInvalidWithName;
+use Enjoys\Tests\Oophps\TestLoggerWithName;
+use ErrorException;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use RuntimeException;
 
 class ErrorLoggerTest extends TestCase
 {
@@ -33,7 +36,7 @@ class ErrorLoggerTest extends TestCase
     public function testLogWithDefaultLogLevel()
     {
         $this->errorLogger->log(
-            Error::createFromThrowable(new \ErrorException('error', filename: $file = __FILE__, line: $line = __LINE__))
+            Error::createFromThrowable(new ErrorException('error', filename: $file = __FILE__, line: $line = __LINE__))
         );
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertSame(
@@ -44,7 +47,7 @@ class ErrorLoggerTest extends TestCase
 
     public function testLogWithManyLogLevel()
     {
-        $this->errorLogger->log(Error::createFromThrowable(new \Exception('error')), [
+        $this->errorLogger->log(Error::createFromThrowable(new Exception('error')), [
             LogLevel::ERROR,
             LogLevel::ALERT
         ]);
@@ -109,7 +112,7 @@ class ErrorLoggerTest extends TestCase
 
         $this->errorLogger->log(
             Error::createFromThrowable(
-                new \ErrorException('The error', 0, E_USER_ERROR, $file = __FILE__, $line = __LINE__)
+                new ErrorException('The error', 0, E_USER_ERROR, $file = __FILE__, $line = __LINE__)
             )
         );
 
@@ -136,31 +139,31 @@ class ErrorLoggerTest extends TestCase
     public function testSetDefaultLogLevel()
     {
         $this->errorLogger->setDefaultLogLevel(LogLevel::EMERGENCY);
-        $this->errorLogger->log(Error::createFromThrowable(new \Exception('The error')));
+        $this->errorLogger->log(Error::createFromThrowable(new Exception('The error')));
         $this->assertCount(0, $this->psrLogger->getLogs()[LogLevel::NOTICE] ?? []);
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::EMERGENCY] ?? []);
     }
 
     public function testSetDefaultLogLevelInvalid()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
             'InvalidLogLevel - not allowed, allowed only (EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG)'
         );
         $this->errorLogger->setDefaultLogLevel('InvalidLogLevel');
-        $this->errorLogger->log(Error::createFromThrowable(new \Exception('The error')));
+        $this->errorLogger->log(Error::createFromThrowable(new Exception('The error')));
     }
 
 
     public function testSkipLog()
     {
-        $this->errorLogger->log(Error::createFromThrowable(new \Exception('The error')), false);
+        $this->errorLogger->log(Error::createFromThrowable(new Exception('The error')), false);
         $this->assertCount(0, $this->psrLogger->getLogs());
     }
 
     public function testInvalidSetLogLevel()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
             'InvalidLogLevel - not allowed, allowed only (EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG)'
         );
@@ -193,7 +196,7 @@ class ErrorLoggerTest extends TestCase
     public function testLoggerNameInvalid()
     {
         $logger = new TestLoggerInvalidWithName();
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
             sprintf(
                 'The method `withName` must be return of type %s, %s given',

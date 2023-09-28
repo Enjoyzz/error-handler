@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 
-namespace Enjoys\ErrorHandler;
+namespace Enjoys\Oophps;
 
 
 use Throwable;

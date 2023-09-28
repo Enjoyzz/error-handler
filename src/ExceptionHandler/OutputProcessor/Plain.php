@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor;
+namespace Enjoys\Oophps\ExceptionHandler\OutputProcessor;
 
-use Enjoys\ErrorHandler\ExceptionHandler\ExceptionHandler;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
-use Enjoys\Tests\ErrorHandler\CatchResponse;
-use Enjoys\Tests\ErrorHandler\Emitter;
+use Enjoys\Oophps\ExceptionHandler\ExceptionHandler;
+use Enjoys\Oophps\ExceptionHandler\View\ErrorView;
+use Enjoys\Tests\Oophps\CatchResponse;
+use Enjoys\Tests\Oophps\Emitter;
 use HttpSoft\Message\ServerRequestFactory;
 use Psr\Http\Message\ResponseInterface;
 

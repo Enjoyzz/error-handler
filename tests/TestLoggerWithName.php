@@ -1,9 +1,10 @@
 <?php
 
-namespace Enjoys\Tests\ErrorHandler;
+namespace Enjoys\Tests\Oophps;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Stringable;
 
 class TestLoggerWithName extends TestLogger
 {
@@ -18,7 +19,7 @@ class TestLoggerWithName extends TestLogger
         return $new;
     }
 
-    public function log($level, \Stringable|string $message, array $context = []): void
+    public function log($level, Stringable|string $message, array $context = []): void
     {
         self::$logs[$this->name][$level][] = $message;
     }

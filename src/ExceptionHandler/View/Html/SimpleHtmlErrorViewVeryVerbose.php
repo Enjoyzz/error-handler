@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\View\Html;
+namespace Enjoys\Oophps\ExceptionHandler\View\Html;
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\Oophps\ExceptionHandler\View\ErrorView;
 use HttpSoft\Message\Response;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;

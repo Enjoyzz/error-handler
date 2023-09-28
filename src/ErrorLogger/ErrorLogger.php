@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 
-namespace Enjoys\ErrorHandler\ErrorLogger;
+namespace Enjoys\Oophps\ErrorLogger;
 
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ErrorHandler;
-use Enjoys\ErrorHandler\ErrorLoggerInterface;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ErrorHandler;
+use Enjoys\Oophps\ErrorLoggerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use ReflectionClass;
@@ -77,7 +77,7 @@ final class ErrorLogger implements ErrorLoggerInterface
             if (method_exists($logger, 'withName')) {
                 $logger = $logger->withName($this->loggerNameMap[$error->errorLevel]);
                 if (!$logger instanceof LoggerInterface) {
-                    throw new \RuntimeException(
+                    throw new RuntimeException(
                         sprintf(
                             'The method `withName` must be return of type %s, %s given',
                             LoggerInterface::class,

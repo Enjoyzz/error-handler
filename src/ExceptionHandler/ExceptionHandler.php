@@ -3,20 +3,20 @@
 declare(strict_types=1);
 
 
-namespace Enjoys\ErrorHandler\ExceptionHandler;
+namespace Enjoys\Oophps\ExceptionHandler;
 
 
-use Enjoys\ErrorHandler\Error;
-use Enjoys\ErrorHandler\ErrorHandler;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Html;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Image;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Json;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\OutputError;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Plain;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Svg;
-use Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor\Xml;
-use Enjoys\ErrorHandler\ExceptionHandler\View\ErrorView;
-use Enjoys\ErrorHandler\ExceptionHandlerInterface;
+use Enjoys\Oophps\Error;
+use Enjoys\Oophps\ErrorHandler;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Html;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Image;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Json;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\OutputError;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Plain;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Svg;
+use Enjoys\Oophps\ExceptionHandler\OutputProcessor\Xml;
+use Enjoys\Oophps\ExceptionHandler\View\ErrorView;
+use Enjoys\Oophps\ExceptionHandlerInterface;
 use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Emitter\SapiEmitter;
 use HttpSoft\Message\ResponseFactory;

@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 
-namespace Enjoys\ErrorHandler\ExceptionHandler\OutputProcessor;
+namespace Enjoys\Oophps\ExceptionHandler\OutputProcessor;
 
 
+use GdImage;
 use Psr\Http\Message\ResponseInterface;
 
 use function imagecolorallocate;
@@ -30,7 +31,7 @@ final class Image extends OutputError
     /**
      * @infection-ignore-all
      */
-    private function createImage(): \GdImage
+    private function createImage(): GdImage
     {
         $type = $this->getError()->type;
         $code = empty($this->getError()->code) ? "" : "[{$this->getError()->code}]";
