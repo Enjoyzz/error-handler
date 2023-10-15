@@ -79,7 +79,7 @@ class ErrorLoggerTest extends TestCase
         $this->assertCount(1, $this->psrLogger->getLogs()[LogLevel::ERROR] ?? []);
         $this->assertSame(
             sprintf(
-                'PHP User Error: The Error Message: Enjoys\Tests\ErrorHandler\ErrorLogger\ErrorLoggerTest::testLogDefaultLogFormat in %s on line %s',
+                'PHP User Error: The Error Message: Enjoys\Tests\Oophps\ErrorLogger\ErrorLoggerTest::testLogDefaultLogFormat in %s on line %s',
                 __FILE__,
                 $line
             ),
