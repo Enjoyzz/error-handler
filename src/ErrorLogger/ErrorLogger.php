@@ -63,7 +63,7 @@ final class ErrorLogger implements ErrorLoggerInterface
      * @inheritdoc
      * @psalm-suppress MixedAssignment
      */
-    public function log(Error $error, array|false $logLevels = null, ?callable $logContextCallable = null): void
+    public function log(Error $error, array|false|null $logLevels = null, ?callable $logContextCallable = null): void
     {
         if ($logLevels === false) {
             return;
