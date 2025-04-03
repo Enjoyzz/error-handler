@@ -100,7 +100,7 @@ final class ErrorLogger implements ErrorLoggerInterface
                     $error->code,
                     $error->traceString
                 ),
-                $logContextCallable ? $logContextCallable($error) : []
+                $logContextCallable !== null ? $logContextCallable($error) : []
             );
         }
     }
