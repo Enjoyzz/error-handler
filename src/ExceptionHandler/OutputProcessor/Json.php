@@ -22,6 +22,11 @@ final class Json extends OutputError
                 ]
             ]
         );
+
+        if ($body === false) {
+            throw new \RuntimeException('Unable to encode JSON');
+        }
+
         $this->response->getBody()->write($body);
 
         return $this->response;
