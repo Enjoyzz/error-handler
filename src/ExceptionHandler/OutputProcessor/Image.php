@@ -30,7 +30,7 @@ final class Image extends OutputError
     /**
      * @infection-ignore-all
      */
-    private function createImage(): \GdImage
+    private function createImage(): \GdImage|false
     {
         $type = $this->getError()->type;
         $code = empty($this->getError()->code) ? "" : "[{$this->getError()->code}]";
@@ -38,11 +38,14 @@ final class Image extends OutputError
 
         $size = 200;
         $image = imagecreatetruecolor($size, $size);
+        if ($image === false) {
+            return false;
+        }
         $textColor = imagecolorallocate($image, 255, 255, 255);
-        imagestring($image, 5, 10, 10, "$type $code", $textColor);
+        imagestring($image, 5, 10, 10, "$type $code", $textColor === false ? 0 : $textColor);
 
         foreach (str_split($message, max(1, intval($size / 10))) as $line => $text) {
-            imagestring($image, 5, 10, ($line * 18) + 28, $text, $textColor);
+            imagestring($image, 5, 10, ($line * 18) + 28, $text, $textColor === false ? 0 : $textColor);
         }
 
         return $image;
@@ -52,6 +55,9 @@ final class Image extends OutputError
     {
         ob_start();
         $image = $this->createImage();
+        if ($image === false) {
+            throw new \RuntimeException('Image could not be created');
+        }
         switch ($this->getMimeType()) {
             case 'image/gif':
                 imagegif($image);
@@ -66,7 +72,8 @@ final class Image extends OutputError
                 imagewebp($image);
                 break;
         }
-       return ob_get_clean();
+        $result = ob_get_clean();
+        return $result === false ? throw new \RuntimeException('Image could not be created') : $result;
     }
 
 }
