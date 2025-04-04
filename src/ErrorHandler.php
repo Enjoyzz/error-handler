@@ -24,7 +24,6 @@ final class ErrorHandler
         E_USER_ERROR => 'PHP User Error',
         E_USER_WARNING => 'PHP User Warning',
         E_USER_NOTICE => 'PHP User Notice',
-        E_STRICT => 'PHP Strict Warning',
         E_RECOVERABLE_ERROR => 'PHP Recoverable Error',
         E_DEPRECATED => 'PHP Deprecated',
         E_USER_DEPRECATED => 'PHP User Deprecated',
